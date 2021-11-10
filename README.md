@@ -1,4 +1,4 @@
-# genex1
+# CFDE/GTEx Gene Expression Browser Prototype
 
 > A Vue.js project
 
