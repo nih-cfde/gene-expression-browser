@@ -1,0 +1,596 @@
+{
+  "basePath": "/rest/v1",
+  "host": "gtexportal.org",
+  "info": {
+    "title": "CFDE/GTEx API",
+    "version": "v1"
+  },
+  "paths": {
+    "/dataset/tissueInfo": {
+      "get": {
+        "description": "This service returns tissue information for a dataset. Information includes tissue IDs, number of RNA-Seq samples, number of RNA-Seq samples with genotype, number of expressed genes, number of eGenes. Also includes tissueSiteDetail ID, name, abbreviation, uberon ID, and standard tissue colors. TissueSiteDetails are grouped by TissueSites. By default, this service reports from the latest GTEx release.",
+        "operationId": "tissueInfo",
+        "parameters": [
+          {
+            "default": "gtex_v8",
+            "description": "Unique identifier of a dataset. Usually includes a data source and data release.",
+            "in": "query",
+            "items": {
+              "type": "string"
+            },
+            "name": "datasetId",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "description": "Tissue Site is an anatomical grouping of Tissue Site Details.",
+            "enum": [
+              "Adipose Tissue",
+              "Adrenal Gland",
+              "Blood",
+              "Blood Vessel",
+              "Bladder",
+              "Brain",
+              "Breast",
+              "Cervix Uteri",
+              "Colon",
+              "Esophagus",
+              "Fallopian Tube",
+              "Heart",
+              "Kidney",
+              "Liver",
+              "Lung",
+              "Muscle",
+              "Nerve",
+              "Ovary",
+              "Pancreas",
+              "Pituitary",
+              "Prostate",
+              "Salivary Gland",
+              "Skin",
+              "Small Intestine",
+              "Spleen",
+              "Stomach",
+              "Testis",
+              "Thyroid",
+              "Uterus",
+              "Vagina"
+            ],
+            "in": "query",
+            "name": "tissueSite",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "Standard abbreviation for the Tissue Site Detail, e.g., ADPSBQ.",
+            "in": "query",
+            "name": "tissueSiteDetailAbbr",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "The URL formatted version of a tissueSiteDetail, e.g., Adipose_Subcutaneous",
+            "enum": [
+              "Adipose_Subcutaneous",
+              "Adipose_Visceral_Omentum",
+              "Adrenal_Gland",
+              "Artery_Aorta",
+              "Artery_Coronary",
+              "Artery_Tibial",
+              "Bladder",
+              "Brain_Amygdala",
+              "Brain_Anterior_cingulate_cortex_BA24",
+              "Brain_Caudate_basal_ganglia",
+              "Brain_Cerebellar_Hemisphere",
+              "Brain_Cerebellum",
+              "Brain_Cortex",
+              "Brain_Frontal_Cortex_BA9",
+              "Brain_Hippocampus",
+              "Brain_Hypothalamus",
+              "Brain_Nucleus_accumbens_basal_ganglia",
+              "Brain_Putamen_basal_ganglia",
+              "Brain_Spinal_cord_cervical_c-1",
+              "Brain_Substantia_nigra",
+              "Breast_Mammary_Tissue",
+              "Cells_EBV-transformed_lymphocytes",
+              "Cells_Cultured_fibroblasts",
+              "Cells_Transformed_fibroblasts",
+              "Cervix_Ectocervix",
+              "Cervix_Endocervix",
+              "Colon_Sigmoid",
+              "Colon_Transverse",
+              "Esophagus_Gastroesophageal_Junction",
+              "Esophagus_Mucosa",
+              "Esophagus_Muscularis",
+              "Fallopian_Tube",
+              "Heart_Atrial_Appendage",
+              "Heart_Left_Ventricle",
+              "Kidney_Cortex",
+              "Kidney_Medulla",
+              "Liver",
+              "Lung",
+              "Minor_Salivary_Gland",
+              "Muscle_Skeletal",
+              "Nerve_Tibial",
+              "Ovary",
+              "Pancreas",
+              "Pituitary",
+              "Prostate",
+              "Skin_Not_Sun_Exposed_Suprapubic",
+              "Skin_Sun_Exposed_Lower_leg",
+              "Small_Intestine_Terminal_Ileum",
+              "Spleen",
+              "Stomach",
+              "Testis",
+              "Thyroid",
+              "Uterus",
+              "Vagina",
+              "Whole_Blood"
+            ],
+            "in": "query",
+            "name": "tissueSiteDetailId",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "default": "json",
+            "description": "Format of result.",
+            "enum": [
+              "json",
+              "tsv",
+              "csv"
+            ],
+            "in": "query",
+            "name": "format",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "text/tab-separated-values",
+          "text/plain"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "default": {
+            "description": "Success",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          }
+        },
+        "summary": "Fetch tissue information for a dataset.",
+        "tags": [
+          "dataset"
+        ]
+      }
+    },
+    "/expression/geneExpression": {
+      "get": {
+        "description": "This service returns normalized gene expression in tissues at the sample level. Results may be filtered by dataset, gene or tissue, but at least one gene must be provided. The optional parameter boxplotDetail can be specified to report expression medians and quartiles. By default, this service queries the latest GTEx release.",
+        "operationId": "geneExpression",
+        "parameters": [
+          {
+            "default": [
+              "gtex_v8"
+            ],
+            "description": "Unique identifier of a dataset. Usually includes a data source and data release.",
+            "enum": [
+              "gtex_v8",
+              "gtex_v6p",
+              "gtex_v7"
+            ],
+            "in": "query",
+            "items": {
+              "type": "string"
+            },
+            "name": "datasetId",
+            "required": true,
+            "type": "array"
+          },
+          {
+            "description": "Versioned GENCODE ID of a gene, e.g. ENSG00000065613.9.",
+            "in": "query",
+            "items": {
+              "type": "string"
+            },
+            "name": "gencodeId",
+            "required": true,
+            "type": "array"
+          },
+          {
+            "description": "Tissue ID of the tissue of interest.",
+            "enum": [
+              "Adipose_Subcutaneous",
+              "Adipose_Visceral_Omentum",
+              "Adrenal_Gland",
+              "Artery_Aorta",
+              "Artery_Coronary",
+              "Artery_Tibial",
+              "Bladder",
+              "Brain_Amygdala",
+              "Brain_Anterior_cingulate_cortex_BA24",
+              "Brain_Caudate_basal_ganglia",
+              "Brain_Cerebellar_Hemisphere",
+              "Brain_Cerebellum",
+              "Brain_Cortex",
+              "Brain_Frontal_Cortex_BA9",
+              "Brain_Hippocampus",
+              "Brain_Hypothalamus",
+              "Brain_Nucleus_accumbens_basal_ganglia",
+              "Brain_Putamen_basal_ganglia",
+              "Brain_Spinal_cord_cervical_c-1",
+              "Brain_Substantia_nigra",
+              "Breast_Mammary_Tissue",
+              "Cells_EBV-transformed_lymphocytes",
+              "Cells_Transformed_fibroblasts",
+              "Cervix_Ectocervix",
+              "Cervix_Endocervix",
+              "Colon_Sigmoid",
+              "Colon_Transverse",
+              "Esophagus_Gastroesophageal_Junction",
+              "Esophagus_Mucosa",
+              "Esophagus_Muscularis",
+              "Fallopian_Tube",
+              "Heart_Atrial_Appendage",
+              "Heart_Left_Ventricle",
+              "Kidney_Cortex",
+              "Liver",
+              "Lung",
+              "Minor_Salivary_Gland",
+              "Muscle_Skeletal",
+              "Nerve_Tibial",
+              "Ovary",
+              "Pancreas",
+              "Pituitary",
+              "Prostate",
+              "Skin_Not_Sun_Exposed_Suprapubic",
+              "Skin_Sun_Exposed_Lower_leg",
+              "Small_Intestine_Terminal_Ileum",
+              "Spleen",
+              "Stomach",
+              "Testis",
+              "Thyroid",
+              "Uterus",
+              "Vagina",
+              "Whole_Blood"
+            ],
+            "in": "query",
+            "items": {
+              "type": "string"
+            },
+            "name": "tissueSiteDetailId",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "description": "Subject attribute to subset data by.",
+            "enum": [
+              "ageBracket",
+              "sex"
+            ],
+            "in": "query",
+            "name": "attributeSubset",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "default": "json",
+            "description": "Format of result.",
+            "enum": [
+              "json",
+              "tsv",
+              "csv"
+            ],
+            "in": "query",
+            "name": "format",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "text/tab-separated-values",
+          "text/plain"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "default": {
+            "description": "Success",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          }
+        },
+        "summary": "Find normalized gene expression data.",
+        "tags": [
+          "expression"
+        ]
+      }
+    },
+    "/reference/exon": {
+      "get": {
+        "deprecated": false,
+        "description": "This service returns exons from all known transcripts of the given gene. A versioned GENCODE ID is required to ensure that all exons are from a single gene. A dataset ID or both GENCODE version and genome build must be provided. Although annotated exons are not dataset dependent, specifying a dataset here is equivalent to specifying the GENCODE version and genome build used by that dataset.",
+        "operationId": "exon",
+        "parameters": [
+          {
+            "description": "Versioned GENCODE ID of a gene, e.g. ENSG00000065613.9.",
+            "in": "query",
+            "name": "gencodeId",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "GENCODE annotation release.",
+            "enum": [
+              "v19",
+              "v26"
+            ],
+            "in": "query",
+            "name": "gencodeVersion",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "Reference genome assembly.",
+            "enum": [
+              "GRCh37/hg19",
+              "GRCh38/hg38"
+            ],
+            "in": "query",
+            "name": "genomeBuild",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "Unique identifier of a dataset. Usually includes a data source and data release.",
+            "in": "query",
+            "name": "datasetId",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "text/tab-separated-values",
+          "text/plain"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "default": {
+            "description": "Success",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          }
+        },
+        "summary": "Find exons from all known reference transcripts of the given gene.",
+        "tags": [
+          "reference"
+        ]
+      }
+    },
+    "/reference/gene": {
+      "get": {
+        "description": "This service returns information about reference genes. A genome build and GENCODE version must be provided. Genes are searchable by gene symbol, GENCODE ID and versioned GENCODE ID. Versioned GENCODE ID is recommended to ensure unique ID matching. By default, this service queries the genome build and GENCODE version used by the latest GTEx release.",
+        "operationId": "gene",
+        "parameters": [
+          {
+            "description": "A gene symbol, versioned gencodeId, or unversioned gencodeId.",
+            "in": "query",
+            "items": {
+              "type": "string"
+            },
+            "name": "geneId",
+            "required": true,
+            "type": "array"
+          },
+          {
+            "default": "v26",
+            "description": "GENCODE annotation release.",
+            "enum": [
+              "v19",
+              "v26"
+            ],
+            "in": "query",
+            "name": "gencodeVersion",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "default": "GRCh38/hg38",
+            "description": "Reference genome assembly.",
+            "enum": [
+              "GRCh37/hg19",
+              "GRCh38/hg38"
+            ],
+            "in": "query",
+            "name": "genomeBuild",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "Page (slice) of entire results set to return. 0-based.",
+            "in": "query",
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "name": "page",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "default": 250,
+            "description": "Number of records per page of results.  Max is 2000.",
+            "in": "query",
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "maximum": 2000,
+            "minimum": 1,
+            "name": "pageSize",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "default": "json",
+            "description": "Format of result.",
+            "enum": [
+              "json",
+              "tsv",
+              "csv"
+            ],
+            "in": "query",
+            "name": "format",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "text/tab-separated-values",
+          "text/plain"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "default": {
+            "description": "Success",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          }
+        },
+        "summary": "Find reference genes.",
+        "tags": [
+          "reference"
+        ]
+      }
+    },
+    "/reference/transcript": {
+      "get": {
+        "deprecated": false,
+        "description": "This service returns information about transcripts of the given versioned GENCODE ID. A genome build and GENCODE version must be provided. By default, this service queries the genome build and GENCODE version used by the latest GTEx release.",
+        "operationId": "transcript",
+        "parameters": [
+          {
+            "description": "Versioned GENCODE ID of a gene, e.g. ENSG00000065613.9.",
+            "in": "query",
+            "name": "gencodeId",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "GENCODE annotation release.",
+            "enum": [
+              "v19",
+              "v26"
+            ],
+            "in": "query",
+            "name": "gencodeVersion",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "Reference genome assembly.",
+            "enum": [
+              "GRCh37/hg19",
+              "GRCh38/hg38"
+            ],
+            "in": "query",
+            "name": "genomeBuild",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "Unique identifier of a dataset. Usually includes a data source and data release.",
+            "in": "query",
+            "name": "datasetId",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "text/tab-separated-values",
+          "text/plain"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "default": {
+            "description": "Success",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          }
+        },
+        "summary": "Find all transcripts of a reference gene.",
+        "tags": [
+          "reference"
+        ]
+      }
+    }
+  },
+  "schemes": [
+    "https"
+  ],
+  "swagger": "2.0"
+}
