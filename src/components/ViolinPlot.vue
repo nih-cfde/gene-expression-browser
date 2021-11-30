@@ -23,6 +23,7 @@
 	  class="pt-2"
           ></v-text-field>
 	<v-btn v-on:click="searchClicked" :disabled="gene_ss == null || gene_ss == ''">search</v-btn>
+	<v-btn v-on:click="resetAll" :disabled="gene_ss == null || gene_ss == ''">reset all</v-btn>
 
 	<h4 class="mt-4 pt-2">Search results ({{ gene_ss_results.length }}):</h4>
 	<v-list>
@@ -349,6 +350,10 @@ export default {
           self.gene_ss_results = res['data']['gene'];
         }
       });
+    },
+    resetAll() {
+      this.clearSelectedGene();
+      this.gene_ss = '';
     },
     gtexURLSuffix(datasetId, pageSize, format) {
       var suffix ="&gencodeVersion=" + GENCODE_VER + "&genomeBuild=" + encodeURIComponent(GENOME_VER);
