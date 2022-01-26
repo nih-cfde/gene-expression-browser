@@ -3,7 +3,7 @@
 
     <v-row class="ma-0 pa-0">
       <v-col cols="12" class="ma-0 pa-0">
-	<v-app-bar class="ma-0 pa-0" color="#336699">
+        <v-app-bar class="ma-0 pa-0" color="#336699">
           <v-toolbar-title class="text-h5 ma-0 pa-0 text-white"><img src="static/CFDE-icon-1.png" style="height: 2rem;" class="pr-2"/>CFDE Multi-Source Gene Expression Browser Prototype</v-toolbar-title>
         </v-app-bar>
       </v-col>
@@ -13,157 +13,156 @@
       <v-col cols="3" class="ma-0 pa-2 pt-4">
 
         <h4 class="lh_head">Data Sources</h4>
-	<v-list class="ml-2" dense>
-	  <v-list-item>
-	    <v-list-item-action>
-	      <v-checkbox v-model="source_gtex"></v-checkbox>
-	    </v-list-item-action>
-	    <v-list-item-content>
-	      GTEx v8
-	    </v-list-item-content>
-	  </v-list-item>
+        <v-list class="ml-2" dense>
+          <v-list-item>
+            <v-list-item-action>
+              <v-checkbox v-model="source_gtex"></v-checkbox>
+            </v-list-item-action>
+            <v-list-item-content>
+              GTEx v8
+            </v-list-item-content>
+          </v-list-item>
 
-	  <v-list-item disabled="true">
-	    <v-list-item-action>
-	      <v-checkbox v-model="source_kidsfirst"></v-checkbox>
-	    </v-list-item-action>
-	    <v-list-item-content>
-	      KidsFirst
-	    </v-list-item-content>
-	  </v-list-item>
+          <v-list-item disabled>
+            <v-list-item-action>
+              <v-checkbox v-model="source_kidsfirst"></v-checkbox>
+            </v-list-item-action>
+            <v-list-item-content>
+              KidsFirst
+            </v-list-item-content>
+          </v-list-item>
 
-	  <v-list-item>
-	    <v-list-item-action>
-	      <v-checkbox v-model="source_recount3"></v-checkbox>
-	    </v-list-item-action>
-	    <v-list-item-content>
-	      Recount3 - GTEx
-	    </v-list-item-content>
-	  </v-list-item>
+          <v-list-item>
+            <v-list-item-action>
+              <v-checkbox v-model="source_recount3"></v-checkbox>
+            </v-list-item-action>
+            <v-list-item-content>
+              Recount3 - GTEx
+            </v-list-item-content>
+          </v-list-item>
 
-	  <v-list-item disabled="true">
-	    <v-list-item-action>
-	      <v-checkbox v-model="source_motrpac"></v-checkbox>
-	    </v-list-item-action>
-	    <v-list-item-content>
-	      MoTrPAC
-	    </v-list-item-content>
-	  </v-list-item>
-	</v-list>
-	
+          <v-list-item disabled>
+            <v-list-item-action>
+              <v-checkbox v-model="source_motrpac"></v-checkbox>
+            </v-list-item-action>
+            <v-list-item-content>
+              MoTrPAC
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+
         <h4 class="lh_head">Gene Search</h4>
-	<v-text-field
-	  v-model="gene_ss"
-	  v-on:keyup.enter="searchClicked"
+        <v-text-field
+          v-model="gene_ss"
+          v-on:keyup.enter="searchClicked"
           label="Enter gene id e.g., MYLK, PTEN, BRCA"
-	  clearable
-	  clear-icon="mdi-close-circle"
-	  solo
-	  class="pa-0 ma-0 pt-2 ml-2"
+          clearable
+          clear-icon="mdi-close-circle"
+          solo
+          class="pa-0 ma-0 pt-2 ml-2"
           ></v-text-field>
-	<v-btn v-on:click="searchClicked" :disabled="gene_ss == null || gene_ss == ''" class="ml-2">search</v-btn>
+        <v-btn v-on:click="searchClicked" :disabled="gene_ss == null || gene_ss == ''" class="ml-2">search</v-btn>
 
-<!--	<h4 class="mt-4 pt-2 ml-2">Search results ({{ gene_ss_results.length }}):</h4> -->
-	<v-list class="ml-2">
-	  <v-list-item-group v-model="sel_gene_index">
-	    <v-list-item v-for="(item, i) in gene_ss_results" :key="i">
-	      <v-list-item-avatar>
-		<v-tooltip v-if="item.geneType == 'protein coding'" top>
-		  <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#61cc7e">P</v-chip></template>
-		  <span>protein coding gene</span>
-		</v-tooltip>
-		
-		<v-tooltip v-else-if="item.geneType.endsWith('unprocessed pseudogene')" top>
-		  <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#ffd0d0">U</v-chip></template>
-		  <span>{{ item.geneType }}</span>
-		</v-tooltip>
-		
-		<v-tooltip v-else-if="item.geneType.endsWith('processed pseudogene')" top>
-		  <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#ffd0d0">Ps</v-chip></template>
-		  <span>{{ item.geneType }}</span>
-		</v-tooltip>
-		
-		<v-tooltip v-else-if="item.geneType == 'antisense'" top>
-		  <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#d0d0ff">A</v-chip></template>
-		  <span>{{ item.geneType }}</span>
-		</v-tooltip>
-		
-		<v-tooltip v-else top>
-		  <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#e0e0e0">?</v-chip></template>
-		  <span>{{ item.geneType }}</span>
-		</v-tooltip>
-		
-	      </v-list-item-avatar>
-	      
-	      <v-list-item-content>
-		<v-list-item-title> {{ item.geneSymbolUpper }} | {{ item.gencodeId }} </v-list-item-title>
-		<v-list-item-subtitle>{{ item.description }} <br>
-		  {{ item.genomeBuild }} {{ item.chromosome }} {{ item.start }} - {{ item.end }} ({{ item.strand }})
-		</v-list-item-subtitle>
-	      </v-list-item-content>
-	    </v-list-item>
-	  </v-list-item-group>
-	</v-list>
+<!--    <h4 class="mt-4 pt-2 ml-2">Search results ({{ gene_ss_results.length }}):</h4> -->
+        <v-list class="ml-2">
+          <v-list-item-group v-model="sel_gene_index">
+            <v-list-item v-for="(item, i) in gene_ss_results" :key="i">
+              <v-list-item-avatar>
+                <v-tooltip v-if="item.geneType == 'protein coding'" top>
+                  <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#61cc7e">P</v-chip></template>
+                  <span>protein coding gene</span>
+                </v-tooltip>
+
+                <v-tooltip v-else-if="item.geneType.endsWith('unprocessed pseudogene')" top>
+                  <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#ffd0d0">U</v-chip></template>
+                  <span>{{ item.geneType }}</span>
+                </v-tooltip>
+
+                <v-tooltip v-else-if="item.geneType.endsWith('processed pseudogene')" top>
+                  <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#ffd0d0">Ps</v-chip></template>
+                  <span>{{ item.geneType }}</span>
+                </v-tooltip>
+
+                <v-tooltip v-else-if="item.geneType == 'antisense'" top>
+                  <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#d0d0ff">A</v-chip></template>
+                  <span>{{ item.geneType }}</span>
+                </v-tooltip>
+
+                <v-tooltip v-else top>
+                  <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#e0e0e0">?</v-chip></template>
+                  <span>{{ item.geneType }}</span>
+                </v-tooltip>
+
+              </v-list-item-avatar>
+
+              <v-list-item-content>
+                <v-list-item-title> {{ item.geneSymbolUpper }} | {{ item.gencodeId }} </v-list-item-title>
+                <v-list-item-subtitle>{{ item.description }} <br>
+                  {{ item.genomeBuild }} {{ item.chromosome }} {{ item.start }} - {{ item.end }} ({{ item.strand }})
+                </v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list-item-group>
+        </v-list>
 
       </v-col>
 
       <v-col cols="9" class="ma-0 pa-2">
 
-	<!-- 2 x 2 layout of data sources -->
-	
-	<v-container class="ma-0 pa-0 ml-3">
-	  <v-row class="ma-0 pa-0">
+        <!-- 2 x 2 layout of data sources -->
 
-	    <v-col cols="6" class="ma-0 pa-2">
-	      <div class="dframe ma-1 pa-0 mt-0">
-		<div class="dframe_title pa-1 pl-3 pt-2"><h4>GTEx v8</h4></div>
-		<div id='gtex_1' class="vplot"></div>
-	      </div>
-	    </v-col>
-	    
-	    <v-col cols="6" class="ma-0 pa-2">
-	      <div class="dframe ma-1 pa-0 mt-0">
-		<div class="dframe_title pa-1 pl-3 pt-2"><h4>KidsFirst</h4></div>
-		<div id='kidsfirst_1' class='vplot'></div>
-	      </div>
-	    </v-col>
-	  </v-row>
-	  
-	  <v-row class="ma-0 pa-0">
-	    <v-col cols="6" class="ma-0 pa-2">
-	      <div class="dframe ma-1 pa-0">
-		<div class="dframe_title pa-1 pl-3 pt-2"><h4>Recount3 - GTEx</h4></div>
-		<div id='recount3_1' class='vplot'></div>
-	      </div>
-	    </v-col>
-	    
-	    <v-col cols="6" class="ma-0 pa-2">
-	      <div class="dframe ma-1 pa-0">
-		<div class="dframe_title pa-1 pl-3 pt-2"><h4>MoTrPAC</h4></div>
-		<div id='motrpac_1' class='vplot'></div>
-	      </div>
-	    </v-col>
-	  </v-row>
-	</v-container>
+        <v-container class="ma-0 pa-0 ml-3">
+          <v-row class="ma-0 pa-0">
+
+            <v-col cols="6" class="ma-0 pa-2">
+              <div class="dframe ma-1 pa-0 mt-0">
+                <div class="dframe_title pa-1 pl-3 pt-2"><h4>GTEx v8</h4></div>
+                <div id='gtex_1' class="vplot"></div>
+              </div>
+            </v-col>
+
+            <v-col cols="6" class="ma-0 pa-2">
+              <div class="dframe ma-1 pa-0 mt-0">
+                <div class="dframe_title pa-1 pl-3 pt-2"><h4>KidsFirst</h4></div>
+                <div id='kidsfirst_1' class='vplot'></div>
+              </div>
+            </v-col>
+          </v-row>
+
+          <v-row class="ma-0 pa-0">
+            <v-col cols="6" class="ma-0 pa-2">
+              <div class="dframe ma-1 pa-0">
+                <div class="dframe_title pa-1 pl-3 pt-2"><h4>Recount3 - GTEx</h4></div>
+                <div id='recount3_1' class='vplot'></div>
+              </div>
+            </v-col>
+
+            <v-col cols="6" class="ma-0 pa-2">
+              <div class="dframe ma-1 pa-0">
+                <div class="dframe_title pa-1 pl-3 pt-2"><h4>MoTrPAC</h4></div>
+                <div id='motrpac_1' class='vplot'></div>
+              </div>
+            </v-col>
+          </v-row>
+        </v-container>
 
       </v-col>
     </v-row>
 
-    
   </v-container>
 </template>
 
 <script>
-var GTEX_API = 'https://gtexportal.org/rest/v1/';
-var GTEX_VER = 'gtex_v8';
-var GENCODE_VER = 'v26';
-var GENOME_VER = 'GRCh38/hg38';
-var PAGE_SIZE = 250;
+var GTEX_API = 'https://gtexportal.org/rest/v1/'
+var GTEX_VER = 'gtex_v8'
+var GENCODE_VER = 'v26'
+var GENOME_VER = 'GRCh38/hg38'
+var PAGE_SIZE = 250
 
 var SUBSET_COLORS = {
   'male' : '#aaeeff',
   'female' : '#ffaa99',
-};
+}
 
 // GTEx anatomy terms from CFDE:
 /*
@@ -223,21 +222,6 @@ UBERON:0002371 bone marrow
 
 import axios from 'axios';
 
-var transcripts_min_height = 100;
-var transcript_height = 22;
-
-var transcript_config = {
-  id: 'transcript_1',
-  data: null,
-  width: 800,
-  height: transcripts_min_height,
-  marginLeft: 120,
-  marginRight: 20,
-  marginTop: 0,
-  marginBottom: 20,
-  labelPos: 'left'
-};
-
 var violin_config = {
   id: 'gtex_1',
   data: null,
@@ -281,13 +265,6 @@ export default {
       sel_geneSymbol: null,
       sel_gene: null,
 
-      // transcript divs
-      trans_divs: [],
-
-      // transcripts and exons of selected gene
-      transcripts: null,
-      exons: null,
-
       // tissue info
       tissue_info: null,
       uberon2tissues: null,
@@ -319,7 +296,6 @@ export default {
       if (gid == null) {
         this.clearSelectedGene();
       } else {
-        this.getGeneTranscriptsAndExons(gid);
         if (this.uberon2tissues) { this.getGeneExpressionData(gid); }
       }
     },
@@ -349,12 +325,6 @@ export default {
       this.detailId2tissue = dt;
       if (this.sel_gencodeId) { this.getGeneExpressionData(this.sel_gencodeId); }
     },
-    transcripts(ts) {
-      this.displayGeneStructure();
-    },
-    exons(es) {
-      this.displayGeneStructure();
-    },
     expression_data(ed) {
      this.displayExpressionData();
     },
@@ -375,14 +345,6 @@ export default {
     this.getTissueInfo(GTEX_VER);
   },
   computed: {
-    transcriptsHeight() {
-      let height = transcripts_min_height;
-      if (this.transcripts) {
-        let cheight = this.transcripts.length * transcript_height;
-        if (cheight > height) height = cheight;
-      }
-      return height;
-    },
   },
   methods: {
     clearSearchResults() {
@@ -394,10 +356,7 @@ export default {
       this.sel_gencodeId = null;
       this.sel_geneSymbol = null;
       this.sel_gene_index = null;
-      this.transcripts = null;
-      this.exons = null;
       this.clearExpressionData();
-//      $("#transcript_1-svg").remove();
     },
     clearExpressionData() {
       this.expression_data = null;
@@ -423,49 +382,6 @@ export default {
     getGeneInfo(search_str) {
       let gene_url = GTEX_API + "reference/gene?geneId=" + search_str + this.gtexURLSuffix(GTEX_VER, PAGE_SIZE, 'json');
       return axios.get(gene_url);
-    },
-    getGeneTranscripts(gencodeId) {
-      let trans_url = GTEX_API + "reference/transcript?gencodeId=" + gencodeId + this.gtexURLSuffix();
-      return axios.get(trans_url);
-    },
-    getGeneExons(gencodeId) {
-      let exon_url = GTEX_API + "reference/exon?gencodeId=" + gencodeId + this.gtexURLSuffix();
-      return axios.get(exon_url);
-    },
-    getGeneTranscriptsAndExons(gencodeId) {
-      let self = this;
-      this.getGeneTranscripts(gencodeId).then(function(r) { self.transcripts = r.data.transcript; } );
-      this.getGeneExons(gencodeId).then(function(r) { self.exons = r.data.exon; } );
-    },
-    displayGeneStructure() {
-      if ((this.transcripts == null) || (this.exons == null)) return;
-      let t2exons = {};
-      this.exons.forEach(e => {
-        let tid = e.transcriptId;
-        if (!(tid in t2exons)) {
-          t2exons[tid] = [];
-        }
-        t2exons[tid].push({
-          "chrom": e.chromosome.replace('chr',''),
-          "chromEnd": e.end,
-          "exonId": e.exonId,
-          "exonNumber": e.exonNumber,
-          "chromStart": e.start,
-          "strand": e.strand
-        });
-      });
-
-      // display all transcripts
-      let t_transcripts = this.transcripts;
-      let t_exons = {};
-      Object.keys(t2exons).forEach(k => {
-        t_exons[k] = t2exons[k];
-      });
-
-      let nt = t_transcripts.length;
-      transcript_config['height'] = this.transcriptsHeight;
-      transcript_config['data'] = { 'transcripts': t_transcripts, 'exons': t_exons };
-//      GTExViz.transcriptTracks(transcript_config);
     },
     getTissueInfo(dataset) {
       let tissue_url = GTEX_API + "dataset/tissueInfo?datasetId=" + GTEX_VER + "&format=json"
