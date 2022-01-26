@@ -23,6 +23,7 @@
 	  class="pt-2"
           ></v-text-field>
 	<v-btn v-on:click="searchClicked" :disabled="gene_ss == null || gene_ss == ''">search</v-btn>
+	<v-btn v-on:click="resetAll" :disabled="gene_ss == null || gene_ss == ''">reset all</v-btn>
 
 	<h4 class="mt-4 pt-2">Search results ({{ gene_ss_results.length }}):</h4>
 	<v-list>
@@ -68,7 +69,8 @@
       </v-col>
 
       <v-col cols="8" class="ma-0 pa-0 pl-4">
-	<h3>CFDE Anatomy Terms: <span v-if="uberon_ids" class="font-italic">{{ uberon_ids.join(",") }}</span><span v-else class="font-italic">none</span></h3>
+	<h3>CFDE Anatomy Terms: <v-text-field dense v-model="uberon_ids_txt"></v-text-field></h3>
+	<v-btn v-on:click="uberon_ids_txt=default_uberon_ids_txt" :disabled="uberon_ids_txt == default_uberon_ids_txt">reset</v-btn>
 	
 	<h3 class="pt-2 mt-4">Selected Gene: <span v-if="sel_gencodeId">{{ sel_geneSymbol }} | {{ sel_gencodeId }}</span><span v-else class="font-italic">none</span></h3>
 	<span v-if="sel_gene">{{ sel_gene['description'] }}</span>
@@ -108,6 +110,8 @@ var SUBSET_COLORS = {
   'male' : '#aaeeff',
   'female' : '#ffaa99',
 };
+
+var DEFAULT_UBERON_IDS_TXT = 'UBERON:0002037,UBERON:0013756';
 
 // GTEx anatomy terms from CFDE:
 /*
@@ -236,7 +240,10 @@ export default {
       tissue_info: null,
       uberon2tissues: null,
       detailId2tissue: null,
-      uberon_ids: ['UBERON:0002037', 'UBERON:0013756'], // cerebellum, venous blood
+      // cerebellum, venous blood
+      uberon_ids: DEFAULT_UBERON_IDS_TXT.split(/\s*,\s*/),
+      uberon_ids_txt: DEFAULT_UBERON_IDS_TXT,
+      default_uberon_ids_txt: DEFAULT_UBERON_IDS_TXT,
 
       // gene expression data
       expression_data: null,
@@ -306,7 +313,11 @@ export default {
     log_scale(so) {
       this.clearExpressionData();
       this.getGeneExpressionData(this.sel_gencodeId);
-    }
+    },
+    uberon_ids_txt(nt) {
+      let ids = nt.split(/\s*,\s*/);
+      this.uberon_ids = ids;
+    },
   },
   mounted() {
     this.getTissueInfo(GTEX_VER);
@@ -349,6 +360,11 @@ export default {
           self.gene_ss_results = res['data']['gene'];
         }
       });
+    },
+    resetAll() {
+      this.clearSelectedGene();
+      this.gene_ss = '';
+      this.uberon_ids_txt = this.default_uberon_ids_txt;
     },
     gtexURLSuffix(datasetId, pageSize, format) {
       var suffix ="&gencodeVersion=" + GENCODE_VER + "&genomeBuild=" + encodeURIComponent(GENOME_VER);
