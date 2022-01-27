@@ -6,20 +6,21 @@ import MultiSource from '@/components/MultiSource'
 Vue.use(Router)
 
 export default new Router({
-  routes: [
+    mode: 'history',
+    routes: [
     {
       path: '/',
-      redirect: '/usecase1'
+      redirect: '/multi'
     },
     {
-      path: '/usecase1/',
+      path: '/usecase1',
       name: 'ViolinPlot',
-      component: ViolinPlot
+      component: () => import('@/components/ViolinPlot.vue'),
     },
     {
       path: '/multi',
       name: 'MultiSource',
-      component: MultiSource
-    }
+      component: () => import('@/components/MultiSource.vue'),
+    },
   ]
 })
