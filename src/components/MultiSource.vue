@@ -66,7 +66,7 @@
 <!--    <h4 class="mt-4 pt-2 ml-2">Search results ({{ gene_ss_results.length }}):</h4> -->
         <v-list class="ml-2">
           <v-list-item-group v-model="sel_gene_index">
-            <v-list-item v-for="(item, i) in gene_ss_results" :key="i">
+            <v-list-item v-for="(item, i) in gene_ss_results.slice(0, max_gene_results)" :key="i">
               <v-list-item-avatar>
                 <v-tooltip v-if="item.geneType == 'protein coding'" top>
                   <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#61cc7e">P</v-chip></template>
@@ -103,7 +103,14 @@
               </v-list-item-content>
             </v-list-item>
           </v-list-item-group>
-        </v-list>
+
+	  <v-list-item v-if="gene_ss_results.length > max_gene_results">
+	    <v-list-item-content>
+	      <span class="font-italic">{{ gene_ss_results.length - max_gene_results }} additional result(s) not shown</span>
+	    </v-list-item-content>
+	  </v-list-item>
+
+	</v-list>
 
       </v-col>
 
@@ -264,6 +271,7 @@ export default {
       gene_ss: '',
       gene_ss_results: [],
       sel_gene_index: null,
+      max_gene_results: 5,
 
       // violin plot configuration
       violin_configs: {},
