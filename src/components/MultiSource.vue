@@ -19,7 +19,7 @@
               <v-checkbox v-model="source_gtex"></v-checkbox>
             </v-list-item-action>
             <v-list-item-content>
-              <span>GTEx v8 <v-chip color="#336699" class="dense text-white font-weight-medium ml-2">Common Fund</v-chip></span>
+              <span>GTEx v8 <v-chip color="#336699" class="dense text-white font-weight-medium ml-3">Common Fund</v-chip></span>
             </v-list-item-content>
           </v-list-item>
 
@@ -28,7 +28,7 @@
               <v-checkbox v-model="source_motrpac"></v-checkbox>
             </v-list-item-action>
             <v-list-item-content>
-              <span>MoTrPAC <v-chip color="#336699" class="dense text-white font-weight-medium ml-2">Common Fund</v-chip></span>
+              <span>MoTrPAC <v-chip color="#336699" class="dense text-white font-weight-medium ml-3">Common Fund</v-chip></span>
             </v-list-item-content>
           </v-list-item>
 
@@ -46,7 +46,7 @@
               <v-checkbox v-model="source_kidsfirst"></v-checkbox>
             </v-list-item-action>
             <v-list-item-content>
-              <span>KidsFirst <v-chip color="#336699" class="dense text-white font-weight-medium ml-2">Common Fund</v-chip></span>
+              <span>KidsFirst <v-chip disabled color="#336699" class="dense text-white font-weight-medium ml-3">Common Fund</v-chip></span>
             </v-list-item-content>
           </v-list-item>
 
@@ -130,15 +130,23 @@
 
             <v-col cols="6" class="ma-0 pa-2">
               <div class="dframe ma-1 pa-0 mt-0">
-                <div class="dframe_title pa-1 pl-3 pt-2"><h4>GTEx v8</h4></div>
-                <div id='gtex_1' class="vplot"></div>
+                <div class="dframe_title pa-1 pl-3 pt-2">
+		  <h4>GTEx v8</h4>
+		  <h6>{{ sel_gene ? sel_gene.gencodeId + " | " + sel_gene.geneSymbolUpper : "no gene selected" }}</h6>
+		</div>
+                <div id='gtex_1' class="vplot"><v-progress-circular v-if="gtex_loading" indeterminate color="primary" class="ma-4"></v-progress-circular></div>
+		<div class="dframe_footer pa-1 pl-3"><span class="font-italic">API:</span> {{ gtexAPI }}</div>
               </div>
             </v-col>
 
             <v-col cols="6" class="ma-0 pa-2">
               <div class="dframe ma-1 pa-0 mt-0">
-                <div class="dframe_title pa-1 pl-3 pt-2"><h4>MoTrPAC</h4></div>
+                <div class="dframe_title pa-1 pl-3 pt-2">
+		  <h4>MoTrPAC</h4>
+		  <h6>{{ "no gene selected" }}</h6>
+		</div>
                 <div id='motrpac_1' class='vplot'></div>
+		<div class="dframe_footer pa-1 pl-3"><span class="font-italic">source:</span>flat file data</div>
               </div>
             </v-col>
           </v-row>
@@ -146,15 +154,23 @@
           <v-row class="ma-0 pa-0">
             <v-col cols="6" class="ma-0 pa-2">
               <div class="dframe ma-1 pa-0">
-                <div class="dframe_title pa-1 pl-3 pt-2"><h4>Recount3 - GTEx</h4></div>
-                <div id='recount3_1' class='vplot'></div>
+                <div class="dframe_title pa-1 pl-3 pt-2">
+		  <h4>Recount3 - GTEx</h4>
+		  <h6>{{ sel_gene ? sel_gene.gencodeId + " | " + sel_gene.geneSymbolUpper : "no gene selected" }}</h6>
+		</div>
+		<div id='recount3_1' class='vplot'><v-progress-circular v-if="recount_loading" indeterminate color="primary" class="ma-4"></v-progress-circular></div>
+		<div class="dframe_footer pa-1 pl-3"><span class="font-italic">API:</span> http://snaptron.cs.jhu.edu/gtex/</div>
               </div>
             </v-col>
 
             <v-col cols="6" class="ma-0 pa-2">
               <div class="dframe ma-1 pa-0">
-                <div class="dframe_title pa-1 pl-3 pt-2"><h4>KidsFirst</h4></div>
+                <div class="dframe_title pa-1 pl-3 pt-2">
+		  <h4>KidsFirst</h4>
+		  <h6>{{ "no gene selected" }}</h6>
+		</div>
                 <div id='kidsfirst_1' class='vplot'></div>
+		<div class="dframe_footer pa-1 pl-3"><span class="font-italic">source:</span> no data available</div>
               </div>
             </v-col>
           </v-row>
@@ -227,6 +243,8 @@ export default {
       genomeVer: GENOME_VER,
       pageSize: PAGE_SIZE,
 
+      recountGtexAPI: RECOUNT_GTEX_API,
+
       tissues: TISSUES,
       sel_tissue: TISSUES[0],
 
@@ -253,6 +271,8 @@ export default {
       recount_expression_data: null,
       recount_tissue: null,
       recount_tissue_color_hex: null,
+      gtex_loading: false,
+      recount_loading: false,
 
       subset_by_sex: false,
       show_outliers: true,
@@ -399,7 +419,9 @@ export default {
       if (subset) gtex_url += "&attributeSubset=" + subset;
       gtex_url += this.gtexURLSuffix();
       this.exp_gene = gene;
+      self.gtex_loading = true;
       axios.get(gtex_url).then(function(r) {
+        self.gtex_loading = false;
         self.gtex_expression_data = r.data.geneExpression;
       });
 
@@ -416,7 +438,9 @@ export default {
       // lookup by gene symbol
 //      let recount_url = 'http://127.0.0.1/snaptron/gtex/genes?regions=' + gene.geneSymbolUpper + '&sids=' + all_rids.join(",");
 
+      self.recount_loading = true;
       axios.get(recount_url).then(function(r) {
+        self.recount_loading = false;
         self.recount_tissue = tissues[0]['tissueSiteDetail'];;
         self.recount_tissue_color_hex = tissues[0]['colorHex'];
         self.recount_expression_data = r.data;
@@ -654,6 +678,10 @@ div.dframe {
 }
 
 div.dframe_title {
+  width: 100%;
+}
+
+div.dframe_footer {
   width: 100%;
 }
 
