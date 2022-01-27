@@ -276,9 +276,7 @@ export default {
       // violin plot configuration
       violin_configs: {},
 
-      // gencodeId of selected gene
-      sel_gencodeId: null,
-      sel_geneSymbol: null,
+      // selected gene (gencodeId = ENGS id, geneSymbolUpper = gene symbol)
       sel_gene: null,
 
       // tissue info
@@ -286,10 +284,10 @@ export default {
       uberon2tissues: null,
       detailId2tissue: null,
 //      uberon_ids: ['UBERON:0002037', 'UBERON:0013756'], // cerebellum, venous blood
-      uberon_ids: ['UBERON:0013756'], // cerebellum, venous blood
+      uberon_ids: ['UBERON:0013756'], // venous blood
 
       // gene expression data
-      exp_gencodeId: null,
+      exp_gene: null,
       gtex_expression_data: null,
       recount_expression_data: null,
       recount_tissue: null,
@@ -313,19 +311,17 @@ export default {
         this.clearSearchResults();
       }
     },
-    sel_gencodeId(gid) {
-      if (gid == null) {
+    sel_gene(gene) {
+      if (gene == null) {
         this.clearSelectedGene();
       } else {
-        if (this.uberon2tissues) { this.getGeneExpressionData(gid); }
+        if (this.uberon2tissues) { this.getGeneExpressionData(gene); }
       }
     },
     sel_gene_index(ind) {
       if (ind != null) {
         this.clearSelectedGene();
         this.sel_gene = this.gene_ss_results[ind];
-        this.sel_gencodeId = this.gene_ss_results[ind].gencodeId;
-        this.sel_geneSymbol = this.gene_ss_results[ind].geneSymbolUpper;
       }
     },
     // index tissues by UBERON id and tissueSiteDetailId
@@ -344,7 +340,7 @@ export default {
       });
       this.uberon2tissues = ut;
       this.detailId2tissue = dt;
-      if (this.sel_gencodeId) { this.getGeneExpressionData(this.sel_gencodeId); }
+      if (this.sel_gene) { this.getGeneExpressionData(this.sel_gene); }
     },
     gtex_expression_data(ed) {
      this.displayGTExExpressionData();
@@ -354,15 +350,15 @@ export default {
     },
     subset_by_sex(ss) {
       this.clearExpressionData();
-      this.getGeneExpressionData(this.sel_gencodeId);
+      this.getGeneExpressionData(this.sel_gene);
     },
     show_outliers(so) {
       this.clearExpressionData();
-      this.getGeneExpressionData(this.sel_gencodeId);
+      this.getGeneExpressionData(this.sel_gene);
     },
     log_scale(so) {
       this.clearExpressionData();
-      this.getGeneExpressionData(this.sel_gencodeId);
+      this.getGeneExpressionData(this.sel_gene);
     }
   },
   mounted() {
@@ -384,8 +380,6 @@ export default {
     },
     clearSelectedGene() {
       this.sel_gene = null;
-      this.sel_gencodeId = null;
-      this.sel_geneSymbol = null;
       this.sel_gene_index = null;
       this.clearExpressionData();
     },
@@ -421,7 +415,7 @@ export default {
       let self = this;
       axios.get(tissue_url).then(function(r) { self.tissue_info = r.data.tissueInfo; });
     },
-    getGeneExpressionData(gencodeId) {
+    getGeneExpressionData(gene) {
       let subset = (this.subset_by_sex) ? 'sex' : null;
       let tissues = [];
       let self = this;
@@ -434,10 +428,10 @@ export default {
 
       // GTEx v8
       let tissues_str = "&tissueSiteDetailId=" + encodeURIComponent(tissues.map(t => t['tissueSiteDetailId']).join(","));
-      let gtex_url = GTEX_API + "expression/geneExpression?gencodeId=" + gencodeId + tissues_str;
+      let gtex_url = GTEX_API + "expression/geneExpression?gencodeId=" + gene.gencodeId + tissues_str;
       if (subset) gtex_url += "&attributeSubset=" + subset;
       gtex_url += this.gtexURLSuffix();
-      this.exp_gencodeId = gencodeId;
+      this.exp_gene = gene;
       axios.get(gtex_url).then(function(r) {
         self.gtex_expression_data = r.data.geneExpression;
       });
@@ -454,7 +448,11 @@ export default {
 // TODO - add queries for male_rids
 // TODO - add queries for all tissues
 
-      let recount_url = 'http://127.0.0.1/snaptron/gtex/genes?regions=' + gencodeId + '&sids=' + wb_female_rids.join(",");
+      // lookup by gencodeId
+      let recount_url = 'http://127.0.0.1/snaptron/gtex/genes?regions=' + gene.gencodeId + '&sids=' + wb_female_rids.join(",");
+      // lookup by gene symbol
+//      let recount_url = 'http://127.0.0.1/snaptron/gtex/genes?regions=' + gene.geneSymbolUpper + '&sids=' + wb_female_rids.join(",");
+
       axios.get(recount_url).then(function(r) {
         self.recount_tissue = tissues[0]['tissueSiteDetail'];;
         self.recount_tissue_color_hex = tissues[0]['colorHex'];
@@ -511,8 +509,8 @@ export default {
         let fields = l.split("\t");
         let gene_ids = fields[11].split(":");
         if (gene_ids[0] == 'gene_id') {
-          // header line
-        } else if (gene_ids[0] == this.exp_gencodeId) {
+        // header line
+        } else if ((gene_ids[0] == this.exp_gene.gencodeId) || (gene_ids[1] == this.exp_gene.geneSymbolUpper)) {
           let samples = fields[12];
           let sample_counts = samples.split(",");
           let data = [];
@@ -532,7 +530,7 @@ export default {
           };
           violin_config.data.push(tissue);
         } else {
-          console.log("read additional gene " + gene_ids[0]);
+//          console.log("read additional gene " + gene_ids[0]);
         }
       });
       GTExViz.groupedViolinPlot(violin_config);
