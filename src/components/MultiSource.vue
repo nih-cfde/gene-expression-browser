@@ -37,7 +37,7 @@
               <v-checkbox v-model="source_recount3"></v-checkbox>
             </v-list-item-action>
             <v-list-item-content>
-              Recount3 - GTEx
+              Recount3 - GTEx v8
             </v-list-item-content>
           </v-list-item>
 
@@ -153,16 +153,23 @@
 </template>
 
 <script>
+// GTEx
 var GTEX_API = 'https://gtexportal.org/rest/v1/'
 var GTEX_VER = 'gtex_v8'
 var GENCODE_VER = 'v26'
 var GENOME_VER = 'GRCh38/hg38'
 var PAGE_SIZE = 250
 
+// Snaptron/Recount
+//var RECOUNT_GTEX_API = 'http://snaptron.cs.jhu.edu/gtex/'
+var RECOUNT_GTEX_API = 'http://127.0.0.1/snaptron/gtex/'
+
 var SUBSET_COLORS = {
   'male' : '#aaeeff',
   'female' : '#ffaa99',
 }
+
+var SOURCES = ['gtex', 'kidsfirst', 'recount3', 'motrpac']
 
 // GTEx anatomy terms from CFDE:
 /*
@@ -222,12 +229,11 @@ UBERON:0002371 bone marrow
 
 import axios from 'axios';
 
-var violin_config = {
-  id: 'gtex_1',
+var violin_config_default = {
   data: null,
   width: 600,
   height: 440,
-  marginLeft: 100,
+  marginLeft: 120,
   marginRight: 80,
   marginTop: 30,
   marginBottom: 120,
@@ -257,8 +263,10 @@ export default {
       // gene search string
       gene_ss: '',
       gene_ss_results: [],
-
       sel_gene_index: null,
+
+      // violin plot configuration
+      violin_configs: {},
 
       // gencodeId of selected gene
       sel_gencodeId: null,
@@ -273,16 +281,21 @@ export default {
       uberon_ids: ['UBERON:0013756'], // cerebellum, venous blood
 
       // gene expression data
-      expression_data: null,
+      exp_gencodeId: null,
+      gtex_expression_data: null,
+      recount_expression_data: null,
+      recount_tissue: null,
+      recount_tissue_color_hex: null,
+
       subset_by_sex: false,
       show_outliers: true,
       log_scale: false,
 
       // toggle data sources
-     source_gtex: true,
-     source_kidsfirst: false,
-     source_recount3: true,
-     source_motrpac: false,
+      source_gtex: true,
+      source_kidsfirst: false,
+      source_recount3: true,
+      source_motrpac: false,
    };
   },
   watch: {
@@ -325,8 +338,11 @@ export default {
       this.detailId2tissue = dt;
       if (this.sel_gencodeId) { this.getGeneExpressionData(this.sel_gencodeId); }
     },
-    expression_data(ed) {
-     this.displayExpressionData();
+    gtex_expression_data(ed) {
+     this.displayGTExExpressionData();
+    },
+    recount_expression_data(ed) {
+     this.displayRecountExpressionData();
     },
     subset_by_sex(ss) {
       this.clearExpressionData();
@@ -342,11 +358,18 @@ export default {
     }
   },
   mounted() {
+    this.initConfigs();
     this.getTissueInfo(GTEX_VER);
   },
   computed: {
   },
   methods: {
+    initConfigs() {
+      SOURCES.forEach(s => {
+        this.violin_configs[s] = { ...violin_config_default };
+        this.violin_configs[s]['id'] = s + "_1";
+      });
+    },
     clearSearchResults() {
       this.clearSelectedGene();
       this.gene_ss_results = [];
@@ -359,8 +382,10 @@ export default {
       this.clearExpressionData();
     },
     clearExpressionData() {
-      this.expression_data = null;
+      this.gtex_expression_data = null;
       $("#gtex_1-svg").remove();
+      this.recount_expression_data = null;
+      $("#recount3_1-svg").remove();
     },
     searchClicked() {
       this.clearSelectedGene();
@@ -398,24 +423,51 @@ export default {
       });
 
       if (tissues.length == 0) return;
+
+      // GTEx v8
       let tissues_str = "&tissueSiteDetailId=" + encodeURIComponent(tissues.map(t => t['tissueSiteDetailId']).join(","));
-      let expn_url = GTEX_API + "expression/geneExpression?gencodeId=" + gencodeId + tissues_str;
-      if (subset) expn_url += "&attributeSubset=" + subset;
-      expn_url += this.gtexURLSuffix();
-      axios.get(expn_url).then(function(r) { self.expression_data = r.data.geneExpression; });
+      let gtex_url = GTEX_API + "expression/geneExpression?gencodeId=" + gencodeId + tissues_str;
+      if (subset) gtex_url += "&attributeSubset=" + subset;
+      gtex_url += this.gtexURLSuffix();
+      this.exp_gencodeId = gencodeId;
+      axios.get(gtex_url).then(function(r) {
+        self.gtex_expression_data = r.data.geneExpression;
+      });
+
+      // Snaptron/Recount3
+      // TODO - map each tissueSiteDetail value to rail ids
+      console.log("got tissues = " + tissues.map(t => t.tissueSiteDetail));
+
+      // DEBUG
+      // Whole Blood / female
+      let wb_female_rids = [50158,50165,50169,50624,50663,50422,51534,51591,50530,50254,51110,52062,52162,52164,52188,52353,52369,52386,52401,52454,51824,51929,52745,52841,51768,51781,51782,51788,51790,50922,56562,56599,56620,56635,56434,56465,56272,56010,55794,55521,55556,55583,56752,55630,55667,55680,55683,52203,53325,53333,53337,53784,53862,53709,54032,54044,54054,54122,52854,52883,53470,53590,53592,53594,53613,54023,52997,53006,53016,53019,53021,53031,53048,55365,55448,55451,55245,55320,55325,54344,54348,54351,54352,54427,54210,54887,54931,54934,54664,54680,54688,54775,54816,54818,54823,55116,54501,54535,54958,54995,55000,55068,55888,55908,55966,55972,57520,57211,57242,57272,57307,57319,57353,57366,57112,57167,57688,56830,56907,57861,57865,57875,57898,57913,57935,57012,57038,57805,58897,58524,58817,58818,58826,58846,58869,58877,58430,58492,59044,59047,59117,59120,58238,58243,58245,58316,58009,58192,58204,58208,58211,59332,59360,59367,59394,59402,59410,59453,59517,59562,59585,59587,59634,59644,59654];
+      let wb_male_rids = [51341,51388,51399,51407,50138,50146,50186,50214,50642,50644,50645,50670,50676,50741,50742,51150,51151,51153,51164,51199,51235,50365,50438,50447,51434,51466,50759,50782,50795,50799,50851,51548,51667,50511,50520,50546,50569,50580,50617,50249,50337,51071,51092,51093,51131,51144,52067,52068,52070,52074,52125,52141,52146,52354,52359,52376,52432,52433,51951,51956,52045,52691,51807,51810,51845,52744,52785,52796,52801,52845,51737,51742,51752,51753,51762,51765,51772,52466,52474,52490,56200,56233,56254,56542,56582,56586,56656,56443,56500,56318,56334,56387,56001,56108,56116,55831,55513,55585,55597,56705,56711,56728,56769,55648,55658,55663,55666,55673,55724,52254,52277,53167,53171,53322,53326,53328,53345,53354,53361,53822,53672,53674,53720,53749,54039,54055,54084,54096,54114,52886,52916,52930,53386,53399,53429,53477,53514,53515,53976,53997,52999,53035,53054,55436,55474,55475,55222,55255,55265,55270,55276,55279,55281,55289,55309,55311,55324,55329,55344,54312,54324,54347,54369,54399,54178,54291,54896,54925,54607,54609,54641,54655,54671,54678,54694,54708,54718,54737,54765,54802,54820,55206,54438,54451,54479,54538,54998,55005,55900,55910,55918,55939,55981,55991,57502,57509,57526,57537,57539,57544,57548,57552,57564,57189,57196,57203,57206,57222,57250,57251,57269,57308,57356,57445,57609,57626,57660,57678,57710,56888,57848,57852,57871,57873,57887,57888,57889,57891,57925,57927,57964,57003,57025,57759,57799,57837,58907,58940,58968,58498,58500,58528,58546,58558,58565,58567,58570,58837,58848,58857,58858,59203,59207,59210,59220,58386,58420,58460,58474,58486,58490,59067,59097,59098,59122,59126,58246,58007,58037,58170,58678,58693,58713,59304,59359,59439,59459,59482,59496,59507,59522,59523,59526,59535,59561,59594,59611,59679,59684,59695,59720];
+
+// TODO - add queries for male_rids
+// TODO - add queries for all tissues
+
+      let recount_url = 'http://127.0.0.1/snaptron/gtex/genes?regions=' + gencodeId + '&sids=' + wb_female_rids.join(",");
+      axios.get(recount_url).then(function(r) {
+        self.recount_tissue = tissues[0]['tissueSiteDetail'];;
+        self.recount_tissue_color_hex = tissues[0]['colorHex'];
+        self.recount_expression_data = r.data;
+      });
+
     },
-    displayExpressionData() {
-      if (this.expression_data == null || this.tissue_info == null) return;
+    displayGTExExpressionData() {
+      if (this.gtex_expression_data == null || this.tissue_info == null) return;
       let self = this;
-      let units = this.expression_data[0]['unit'];
+      let units = this.gtex_expression_data[0]['unit'];
+      let violin_config = this.violin_configs['gtex'];
       violin_config.data = [];
       violin_config.showOutliers = this.show_outliers;
       violin_config.yLabel = self.log_scale ? 'log10(' + units + '+1)' : units;
       violin_config.scale = self.log_scale ? 'log' : 'linear';
 
-      this.expression_data.forEach(ed => {
+      this.gtex_expression_data.forEach(ed => {
         let t = self.detailId2tissue[ed['tissueSiteDetailId']];
         let data = self.log_scale ? ed['data'].map(d => Math.log10(+d+1)) : ed['data'];
+
         let tissue = {
           'group': GTEX_VER,
           'label': t['tissueSiteDetail'],
@@ -428,7 +480,52 @@ export default {
           tissue['group'] = t['tissueSiteDetail'];
           tissue['color'] = SUBSET_COLORS[ed['subsetGroup']];
         }
-        violin_config.data.push(tissue);
+        this.violin_configs['gtex'].data.push(tissue);
+      });
+      GTExViz.groupedViolinPlot(this.violin_configs['gtex']);
+    },
+
+    // fields in tab-delimited Snaptron response:
+    //DataSource:Type	snaptron_id	chromosome	start	end	length	strand	NA	NA	NA	exon_count	gene_id:gene_name:gene_type:bp_length	samples	samples_count	coverage_sum	coverage_avg	coverage_median	compilation_id
+    displayRecountExpressionData() {
+      if (this.recount_expression_data == null || this.tissue_info == null) return;
+      let units = 'raw count';
+      let self = this;
+      let violin_config = this.violin_configs['recount3'];
+      violin_config.data = [];
+      violin_config.showOutliers = this.show_outliers;
+      violin_config.yLabel = self.log_scale ? 'log10(' + units + '+1)' : units;
+      violin_config.scale = self.log_scale ? 'log' : 'linear';
+
+      // parse data
+      let lines = this.recount_expression_data.split("\n");
+      lines.filter(l => l != "").forEach(l => {
+        let fields = l.split("\t");
+        let gene_ids = fields[11].split(":");
+        if (gene_ids[0] == 'gene_id') {
+          // header line
+        } else if (gene_ids[0] == this.exp_gencodeId) {
+          let samples = fields[12];
+          let sample_counts = samples.split(",");
+          let data = [];
+          sample_counts.forEach(sc => {
+            if (sc != "") {
+              let fs = sc.split(":");
+              data.push(fs[1] * 1.0);
+            }
+          });
+
+          let tissue = {
+            'group': 'Recount3',
+            'label': self.recount_tissue,
+            'values': data,
+            'color': '#' + self.recount_tissue_color_hex,
+            'fill-opacity': '0.5'
+          };
+          violin_config.data.push(tissue);
+        } else {
+          console.log("read additional gene " + gene_ids[0]);
+        }
       });
       GTExViz.groupedViolinPlot(violin_config);
     },
