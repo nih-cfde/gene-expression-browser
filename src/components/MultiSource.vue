@@ -23,12 +23,12 @@
             </v-list-item-content>
           </v-list-item>
 
-          <v-list-item disabled>
+          <v-list-item>
             <v-list-item-action>
-              <v-checkbox v-model="source_kidsfirst"></v-checkbox>
+              <v-checkbox v-model="source_motrpac"></v-checkbox>
             </v-list-item-action>
             <v-list-item-content>
-              KidsFirst
+              MoTrPAC
             </v-list-item-content>
           </v-list-item>
 
@@ -43,13 +43,14 @@
 
           <v-list-item disabled>
             <v-list-item-action>
-              <v-checkbox v-model="source_motrpac"></v-checkbox>
+              <v-checkbox v-model="source_kidsfirst"></v-checkbox>
             </v-list-item-action>
             <v-list-item-content>
-              MoTrPAC
+              KidsFirst
             </v-list-item-content>
           </v-list-item>
-        </v-list>
+
+	</v-list>
 
         <h4 class="lh_head">Gene Search</h4>
         <v-text-field
@@ -112,6 +113,12 @@
 
 	</v-list>
 
+        <h4 class="lh_head">Tissue</h4>
+        <v-radio-group v-model="sel_tissue" class="ml-2" dense>
+	  <v-radio v-for="(item, i) in tissues" :key="i" :label=" item.name" :value="item">
+	  </v-radio>
+	</v-radio-group>	  
+	
       </v-col>
 
       <v-col cols="9" class="ma-0 pa-2">
@@ -130,8 +137,8 @@
 
             <v-col cols="6" class="ma-0 pa-2">
               <div class="dframe ma-1 pa-0 mt-0">
-                <div class="dframe_title pa-1 pl-3 pt-2"><h4>KidsFirst</h4></div>
-                <div id='kidsfirst_1' class='vplot'></div>
+                <div class="dframe_title pa-1 pl-3 pt-2"><h4>MoTrPAC</h4></div>
+                <div id='motrpac_1' class='vplot'></div>
               </div>
             </v-col>
           </v-row>
@@ -146,8 +153,8 @@
 
             <v-col cols="6" class="ma-0 pa-2">
               <div class="dframe ma-1 pa-0">
-                <div class="dframe_title pa-1 pl-3 pt-2"><h4>MoTrPAC</h4></div>
-                <div id='motrpac_1' class='vplot'></div>
+                <div class="dframe_title pa-1 pl-3 pt-2"><h4>KidsFirst</h4></div>
+                <div id='kidsfirst_1' class='vplot'></div>
               </div>
             </v-col>
           </v-row>
@@ -176,7 +183,15 @@ var SUBSET_COLORS = {
   'female' : '#ffaa99',
 }
 
-var SOURCES = ['gtex', 'kidsfirst', 'recount3', 'motrpac']
+var SOURCES = ['gtex', 'recount3', 'motrpac', 'kidsfirst']
+
+var TISSUES = [
+  { 'name':'venous blood', 'uberon_id': 'UBERON:0013756', 'motrpac': 'blood_rna' },  // gtex = venous blood
+  { 'name':'right lobe of liver', 'uberon_id': 'UBERON:0001114', 'motrpac': 'liver' },           // gtex = liver
+  { 'name':'left ventricle myocardium', 'uberon_id': 'UBERON:0006566', 'motrpac': 'heart' },           // gtex = heart - left ventricle
+  { 'name':'subcutaneous adipose tissue', 'uberon_id': 'UBERON:0002190', 'motrpac': 'white_adipose' },   // gtex = heart
+  { 'name':'gastrocnemius medialis', 'uberon_id': 'UBERON:0011907', 'motrpac': 'gastrocnemius' },   // gtex = muscle - skeletal
+]
 
 // GTEx anatomy terms from CFDE:
 /*
@@ -267,6 +282,9 @@ export default {
       genomeVer: GENOME_VER,
       pageSize: PAGE_SIZE,
 
+      tissues: TISSUES,
+      sel_tissue: TISSUES[0],
+
       // gene search string
       gene_ss: '',
       gene_ss_results: [],
@@ -283,8 +301,6 @@ export default {
       tissue_info: null,
       uberon2tissues: null,
       detailId2tissue: null,
-//      uberon_ids: ['UBERON:0002037', 'UBERON:0013756'], // cerebellum, venous blood
-      uberon_ids: ['UBERON:0013756'], // venous blood
 
       // gene expression data
       exp_gene: null,
@@ -301,7 +317,7 @@ export default {
       source_gtex: true,
       source_kidsfirst: false,
       source_recount3: true,
-      source_motrpac: false,
+      source_motrpac: true,
    };
   },
   watch: {
@@ -342,8 +358,14 @@ export default {
       this.detailId2tissue = dt;
       if (this.sel_gene) { this.getGeneExpressionData(this.sel_gene); }
     },
+    sel_tissue(tissue) {
+      if (this.uberon2tissues && this.sel_gene) {
+        this.clearExpressionData();
+        this.getGeneExpressionData(this.sel_gene);
+      }
+    },
     gtex_expression_data(ed) {
-     this.displayGTExExpressionData();
+      this.displayGTExExpressionData();
     },
     recount_expression_data(ed) {
      this.displayRecountExpressionData();
@@ -419,11 +441,11 @@ export default {
       let subset = (this.subset_by_sex) ? 'sex' : null;
       let tissues = [];
       let self = this;
-      // look up UBERON ids
-      this.uberon_ids.forEach(ui => {
-        tissues = tissues.concat(self.uberon2tissues[ui]);
-      });
 
+      // look up UBERON id
+      if (this.sel_tissue && this.uberon2tissues) {
+        tissues = tissues.concat(this.uberon2tissues[this.sel_tissue.uberon_id]);
+      }
       if (tissues.length == 0) return;
 
       // GTEx v8
