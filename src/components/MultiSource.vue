@@ -19,7 +19,7 @@
               <v-checkbox v-model="source_gtex"></v-checkbox>
             </v-list-item-action>
             <v-list-item-content>
-              GTEx v8
+              <span>GTEx v8 <v-chip color="#336699" class="dense text-white font-weight-medium ml-2">Common Fund</v-chip></span>
             </v-list-item-content>
           </v-list-item>
 
@@ -28,7 +28,7 @@
               <v-checkbox v-model="source_motrpac"></v-checkbox>
             </v-list-item-action>
             <v-list-item-content>
-              MoTrPAC
+              <span>MoTrPAC <v-chip color="#336699" class="dense text-white font-weight-medium ml-2">Common Fund</v-chip></span>
             </v-list-item-content>
           </v-list-item>
 
@@ -37,7 +37,7 @@
               <v-checkbox v-model="source_recount3"></v-checkbox>
             </v-list-item-action>
             <v-list-item-content>
-              Recount3 - GTEx v8
+              <span>Recount3 - GTEx</span>
             </v-list-item-content>
           </v-list-item>
 
@@ -46,7 +46,7 @@
               <v-checkbox v-model="source_kidsfirst"></v-checkbox>
             </v-list-item-action>
             <v-list-item-content>
-              KidsFirst
+              <span>KidsFirst <v-chip color="#336699" class="dense text-white font-weight-medium ml-2">Common Fund</v-chip></span>
             </v-list-item-content>
           </v-list-item>
 
@@ -114,8 +114,8 @@
 	</v-list>
 
         <h4 class="lh_head">Tissue</h4>
-        <v-radio-group v-model="sel_tissue" class="ml-2" dense>
-	  <v-radio v-for="(item, i) in tissues" :key="i" :label=" item.name" :value="item">
+        <v-radio-group v-model="sel_tissue" class="ml-2">
+	  <v-radio v-for="(item, i) in tissues" :key="i" :label="item.uberon_id + ' - ' +  item.name" :value="item">
 	  </v-radio>
 	</v-radio-group>	  
 	
@@ -193,63 +193,8 @@ var TISSUES = [
   { 'name':'gastrocnemius medialis', 'uberon_id': 'UBERON:0011907', 'motrpac': 'gastrocnemius' },   // gtex = muscle - skeletal
 ]
 
-// GTEx anatomy terms from CFDE:
-/*
-UBERON:0002190 subcutaneous adipose tissue
-UBERON:0010414 omental fat pad
-UBERON:0002369 adrenal gland
-UBERON:0001496 ascending aorta
-UBERON:0001621 coronary artery
-UBERON:0007610 tibial artery
-UBERON:0001255 urinary bladder
-UBERON:0001876 amygdala
-UBERON:0009835 anterior cingulate cortex
-UBERON:0001873 caudate nucleus
-UBERON:0002037 cerebellum
-UBERON:0001870 frontal cortex
-UBERON:0009834 dorsolateral prefrontal cortex
-UBERON:0001954 Ammon's horn
-UBERON:0001898 hypothalamus
-UBERON:0001882 nucleus accumbens
-UBERON:0001874 putamen
-UBERON:0006469 C1 segment of cervical spinal cord
-UBERON:0002038 substantia nigra
-UBERON:0008367 breast epithelium
-UBERON:0012249 ectocervix
-UBERON:0000458 endocervix
-UBERON:0001159 sigmoid colon
-UBERON:0001157 transverse colon
-UBERON:0004550 gastroesophageal sphincter
-UBERON:0006920 esophagus squamous epithelium
-UBERON:0004648 esophagus muscularis mucosa
-UBERON:0003889 fallopian tube
-UBERON:0006631 right atrium auricular region
-UBERON:0006566 left ventricle myocardium
-UBERON:0001225 cortex of kidney
-UBERON:0001293 outer medulla of kidney
-UBERON:0001114 right lobe of liver
-UBERON:0008952 upper lobe of left lung
-UBERON:0006330 anterior lingual gland
-UBERON:0011907 gastrocnemius medialis
-UBERON:0001323 tibial nerve
-UBERON:0000992 ovary
-UBERON:0001150 body of pancreas
-UBERON:0000007 pituitary gland
-UBERON:0002367 prostate gland
-UBERON:0036149 suprapubic skin
-UBERON:0004264 lower leg skin
-UBERON:0001211 Peyer's patch
-UBERON:0002106 spleen
-UBERON:0000945 stomach
-UBERON:0000473 testis
-UBERON:0002046 thyroid gland
-UBERON:0000995 uterus
-UBERON:0000996 vagina
-UBERON:0013756 venous blood
-UBERON:0002371 bone marrow
-*/
-
 import axios from 'axios';
+import recount_map from './recount_map.js';
 
 var violin_config_default = {
   data: null,
@@ -459,21 +404,17 @@ export default {
       });
 
       // Snaptron/Recount3
-      // TODO - map each tissueSiteDetail value to rail ids
-      console.log("got tissues = " + tissues.map(t => t.tissueSiteDetail));
-
-      // DEBUG
-      // Whole Blood / female
-      let wb_female_rids = [50158,50165,50169,50624,50663,50422,51534,51591,50530,50254,51110,52062,52162,52164,52188,52353,52369,52386,52401,52454,51824,51929,52745,52841,51768,51781,51782,51788,51790,50922,56562,56599,56620,56635,56434,56465,56272,56010,55794,55521,55556,55583,56752,55630,55667,55680,55683,52203,53325,53333,53337,53784,53862,53709,54032,54044,54054,54122,52854,52883,53470,53590,53592,53594,53613,54023,52997,53006,53016,53019,53021,53031,53048,55365,55448,55451,55245,55320,55325,54344,54348,54351,54352,54427,54210,54887,54931,54934,54664,54680,54688,54775,54816,54818,54823,55116,54501,54535,54958,54995,55000,55068,55888,55908,55966,55972,57520,57211,57242,57272,57307,57319,57353,57366,57112,57167,57688,56830,56907,57861,57865,57875,57898,57913,57935,57012,57038,57805,58897,58524,58817,58818,58826,58846,58869,58877,58430,58492,59044,59047,59117,59120,58238,58243,58245,58316,58009,58192,58204,58208,58211,59332,59360,59367,59394,59402,59410,59453,59517,59562,59585,59587,59634,59644,59654];
-      let wb_male_rids = [51341,51388,51399,51407,50138,50146,50186,50214,50642,50644,50645,50670,50676,50741,50742,51150,51151,51153,51164,51199,51235,50365,50438,50447,51434,51466,50759,50782,50795,50799,50851,51548,51667,50511,50520,50546,50569,50580,50617,50249,50337,51071,51092,51093,51131,51144,52067,52068,52070,52074,52125,52141,52146,52354,52359,52376,52432,52433,51951,51956,52045,52691,51807,51810,51845,52744,52785,52796,52801,52845,51737,51742,51752,51753,51762,51765,51772,52466,52474,52490,56200,56233,56254,56542,56582,56586,56656,56443,56500,56318,56334,56387,56001,56108,56116,55831,55513,55585,55597,56705,56711,56728,56769,55648,55658,55663,55666,55673,55724,52254,52277,53167,53171,53322,53326,53328,53345,53354,53361,53822,53672,53674,53720,53749,54039,54055,54084,54096,54114,52886,52916,52930,53386,53399,53429,53477,53514,53515,53976,53997,52999,53035,53054,55436,55474,55475,55222,55255,55265,55270,55276,55279,55281,55289,55309,55311,55324,55329,55344,54312,54324,54347,54369,54399,54178,54291,54896,54925,54607,54609,54641,54655,54671,54678,54694,54708,54718,54737,54765,54802,54820,55206,54438,54451,54479,54538,54998,55005,55900,55910,55918,55939,55981,55991,57502,57509,57526,57537,57539,57544,57548,57552,57564,57189,57196,57203,57206,57222,57250,57251,57269,57308,57356,57445,57609,57626,57660,57678,57710,56888,57848,57852,57871,57873,57887,57888,57889,57891,57925,57927,57964,57003,57025,57759,57799,57837,58907,58940,58968,58498,58500,58528,58546,58558,58565,58567,58570,58837,58848,58857,58858,59203,59207,59210,59220,58386,58420,58460,58474,58486,58490,59067,59097,59098,59122,59126,58246,58007,58037,58170,58678,58693,58713,59304,59359,59439,59459,59482,59496,59507,59522,59523,59526,59535,59561,59594,59611,59679,59684,59695,59720];
-
-// TODO - add queries for male_rids
-// TODO - add queries for all tissues
+      // map tissueSiteDetail to rail ids
+      let mm = recount_map[tissues[0].tissueSiteDetail];
+      let wb_male_rids = recount_map[tissues[0].tissueSiteDetail]['male'];
+      let wb_female_rids = recount_map[tissues[0].tissueSiteDetail]['female'];
+      let all_rids = wb_male_rids;
+      all_rids = all_rids.concat(wb_female_rids);
 
       // lookup by gencodeId
-      let recount_url = 'http://127.0.0.1/snaptron/gtex/genes?regions=' + gene.gencodeId + '&sids=' + wb_female_rids.join(",");
+      let recount_url = 'http://127.0.0.1/snaptron/gtex/genes?regions=' + gene.gencodeId + '&sids=' + all_rids.join(",");
       // lookup by gene symbol
-//      let recount_url = 'http://127.0.0.1/snaptron/gtex/genes?regions=' + gene.geneSymbolUpper + '&sids=' + wb_female_rids.join(",");
+//      let recount_url = 'http://127.0.0.1/snaptron/gtex/genes?regions=' + gene.geneSymbolUpper + '&sids=' + all_rids.join(",");
 
       axios.get(recount_url).then(function(r) {
         self.recount_tissue = tissues[0]['tissueSiteDetail'];;
