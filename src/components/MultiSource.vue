@@ -554,6 +554,10 @@ export default {
         } else {
           self.motrpac_error = r.data.error;
         }
+      }).catch(function(e) {
+        self.motrpac_loading = false;
+        let err = "MoTrPAC data not available";
+        self.motrpac_error = err;
       });
     },
 
