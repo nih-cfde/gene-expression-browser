@@ -143,10 +143,10 @@
               <div class="dframe ma-1 pa-0 mt-0">
                 <div class="dframe_title pa-1 pl-3 pt-2">
 		  <h4>MoTrPAC</h4>
-		  <h6>{{ "no gene selected" }}</h6>
+		  <h6>{{ motrpacTitle }}</h6>
 		</div>
                 <div id='motrpac_1' class='vplot'></div>
-		<div class="dframe_footer pa-1 pl-3"><span class="font-italic">source:</span>flat file data</div>
+		<div class="dframe_footer pa-1 pl-3"><span class="font-italic">source:</span>Ensembl orthologs, flat file MoTrPAC data</div>
               </div>
             </v-col>
           </v-row>
@@ -193,6 +193,9 @@ var PAGE_SIZE = 250
 // Snaptron/Recount
 //var RECOUNT_GTEX_API = 'http://snaptron.cs.jhu.edu/gtex/'
 var RECOUNT_GTEX_API = 'http://127.0.0.1/snaptron/gtex/'
+
+// Ensembl
+var ENSEMBL_API = 'https://rest.ensembl.org/'
 
 var SUBSET_COLORS = {
   'male' : '#aaeeff',
@@ -245,6 +248,8 @@ export default {
 
       recountGtexAPI: RECOUNT_GTEX_API,
 
+      ensemblAPI: ENSEMBL_API,
+
       tissues: TISSUES,
       sel_tissue: TISSUES[0],
 
@@ -260,6 +265,9 @@ export default {
       // selected gene (gencodeId = ENGS id, geneSymbolUpper = gene symbol)
       sel_gene: null,
 
+      // homologous rat genes for MoTrPAC
+      rat_homologs: null,
+
       // tissue info
       tissue_info: null,
       uberon2tissues: null,
@@ -273,6 +281,8 @@ export default {
       recount_tissue_color_hex: null,
       gtex_loading: false,
       recount_loading: false,
+      motrpac_loading: false,
+      kidsfirst_loading: false,
 
       subset_by_sex: false,
       show_outliers: true,
@@ -297,6 +307,19 @@ export default {
         this.clearSelectedGene();
       } else {
         if (this.uberon2tissues) { this.getGeneExpressionData(gene); }
+          // strip gene version number
+          let r = gene.gencodeId.match(/^(ENSG\d+)\.\d+$/);
+          // look up orthologs via Ensembl
+          let ensembl_url = this.ensemblAPI + 'homology/id/' + r[1] + '?sequence=none&target_taxon=10116&content-type=application/json';
+          let self = this;
+          this.motrpac_loading = true;
+          this.rat_homologs = null;
+          axios.get(ensembl_url).then(function(r) {
+            let n_orthologs = r.data.data.length;
+            if (n_orthologs > 0) {
+              self.rat_homologs = r.data.data[0]['homologies'];
+            }
+          });
       }
     },
     sel_gene_index(ind) {
@@ -353,6 +376,18 @@ export default {
     this.getTissueInfo(GTEX_VER);
   },
   computed: {
+    motrpacTitle() {
+      if (this.rat_homologs == null) {
+        return "no gene selected";
+      } else {
+        let nh = this.rat_homologs.length;
+        if (nh == 0) {
+          return "no orthologs found";
+        } else {
+          return this.rat_homologs[0]['target']['species'] + " | " + this.rat_homologs[0]['target']['id'] + " | " + this.rat_homologs[0]['target']['perc_id'] + "% identity";
+        }
+      }
+    }
   },
   methods: {
     initConfigs() {
