@@ -134,7 +134,10 @@
 		  <h4>GTEx v8</h4>
 		  <h6>{{ sel_gene ? sel_gene.gencodeId + " | " + sel_gene.geneSymbolUpper : "no gene selected" }}</h6>
 		</div>
-                <div id='gtex_1' class="vplot"><v-progress-circular v-if="gtex_loading" indeterminate color="primary" class="ma-4"></v-progress-circular></div>
+                <div id='gtex_1' class="vplot">
+		  <v-progress-circular v-if="gtex_loading" indeterminate color="primary" class="ma-4"></v-progress-circular>
+		  <v-alert v-else-if="gtex_error" type="warning">{{ gtex_error }}</v-alert>
+		</div>
 		<div class="dframe_footer pa-1 pl-3"><span class="font-italic">API:</span> {{ gtexAPI }}</div>
               </div>
             </v-col>
@@ -145,7 +148,10 @@
 		  <h4>MoTrPAC</h4>
 		  <h6>{{ motrpacTitle }}</h6>
 		</div>
-                <div id='motrpac_1' class='vplot'></div>
+                <div id='motrpac_1' class='vplot'>
+		  <v-progress-circular v-if="motrpac_loading" indeterminate color="primary" class="ma-4"></v-progress-circular>
+		  <v-alert v-else-if="motrpac_error" type="warning">{{ motrpac_error }}</v-alert>
+		</div>
 		<div class="dframe_footer pa-1 pl-3"><span class="font-italic">source:</span>Ensembl orthologs, flat file MoTrPAC data</div>
               </div>
             </v-col>
@@ -158,18 +164,24 @@
 		  <h4>Recount3 - GTEx</h4>
 		  <h6>{{ sel_gene ? sel_gene.gencodeId + " | " + sel_gene.geneSymbolUpper : "no gene selected" }}</h6>
 		</div>
-		<div id='recount3_1' class='vplot'><v-progress-circular v-if="recount_loading" indeterminate color="primary" class="ma-4"></v-progress-circular></div>
+		<div id='recount3_1' class='vplot'>
+		  <v-progress-circular v-if="recount_loading" indeterminate color="primary" class="ma-4"></v-progress-circular>
+		  <v-alert v-else-if="recount_error" type="warning">{{ recount_error }}</v-alert>
+		</div>
 		<div class="dframe_footer pa-1 pl-3"><span class="font-italic">API:</span> http://snaptron.cs.jhu.edu/gtex/</div>
               </div>
             </v-col>
 
             <v-col cols="6" class="ma-0 pa-2">
-              <div class="dframe ma-1 pa-0">
+              <div v-if="source_kidsfirst" class="dframe ma-1 pa-0">
                 <div class="dframe_title pa-1 pl-3 pt-2">
 		  <h4>KidsFirst</h4>
 		  <h6>{{ "no gene selected" }}</h6>
 		</div>
-                <div id='kidsfirst_1' class='vplot'></div>
+                <div id='kidsfirst_1' class='vplot'>
+		  <v-progress-circular v-if="kidsfirst_loading" indeterminate color="primary" class="ma-4"></v-progress-circular>
+		  <v-alert v-else-if="kidsfirst_error" type="warning">{{ kidsfirst_error }}</v-alert>
+		</div>
 		<div class="dframe_footer pa-1 pl-3"><span class="font-italic">source:</span> no data available</div>
               </div>
             </v-col>
@@ -185,6 +197,7 @@
 <script>
 // GTEx
 var GTEX_API = 'https://gtexportal.org/rest/v1/'
+//var GTEX_API = 'http://127.0.0.1/gtex/rest/v1/'
 var GTEX_VER = 'gtex_v8'
 var GENCODE_VER = 'v26'
 var GENOME_VER = 'GRCh38/hg38'
@@ -197,6 +210,9 @@ var RECOUNT_GTEX_API = 'http://127.0.0.1/snaptron/gtex/'
 // Ensembl
 var ENSEMBL_API = 'https://rest.ensembl.org/'
 
+// MoTrPAC
+var MOTRPAC_API = 'http://127.0.0.1:5000'
+
 var SUBSET_COLORS = {
   'male' : '#aaeeff',
   'female' : '#ffaa99',
@@ -205,11 +221,11 @@ var SUBSET_COLORS = {
 var SOURCES = ['gtex', 'recount3', 'motrpac', 'kidsfirst']
 
 var TISSUES = [
-  { 'name':'venous blood', 'uberon_id': 'UBERON:0013756', 'motrpac': 'blood_rna' },  // gtex = venous blood
-  { 'name':'right lobe of liver', 'uberon_id': 'UBERON:0001114', 'motrpac': 'liver' },           // gtex = liver
-  { 'name':'left ventricle myocardium', 'uberon_id': 'UBERON:0006566', 'motrpac': 'heart' },           // gtex = heart - left ventricle
-  { 'name':'subcutaneous adipose tissue', 'uberon_id': 'UBERON:0002190', 'motrpac': 'white_adipose' },   // gtex = heart
-  { 'name':'gastrocnemius medialis', 'uberon_id': 'UBERON:0011907', 'motrpac': 'gastrocnemius' },   // gtex = muscle - skeletal
+  { 'name':'venous blood', 'uberon_id': 'UBERON:0013756', 'motrpac': 'blood_rna', 'color_hex': 'ff00bb' }, // gtex = venous blood
+  { 'name':'right lobe of liver', 'uberon_id': 'UBERON:0001114', 'motrpac': 'liver', 'color_hex': 'aabb66' }, // gtex = liver
+  { 'name':'left ventricle myocardium', 'uberon_id': 'UBERON:0006566', 'motrpac': 'heart', 'color_hex': '660099' }, // gtex = heart - left ventricle
+  { 'name':'subcutaneous adipose tissue', 'uberon_id': 'UBERON:0002190', 'motrpac': 'white_adipose', 'color_hex': 'ff6600' }, // gtex = adipose tissue
+  { 'name':'gastrocnemius medialis', 'uberon_id': 'UBERON:0011907', 'motrpac': 'gastrocnemius', 'color_hex': 'aaaaff' }, // gtex = muscle - skeletal
 ]
 
 import axios from 'axios';
@@ -250,6 +266,8 @@ export default {
 
       ensemblAPI: ENSEMBL_API,
 
+      motrpacAPI: MOTRPAC_API,
+
       tissues: TISSUES,
       sel_tissue: TISSUES[0],
 
@@ -279,10 +297,15 @@ export default {
       recount_expression_data: null,
       recount_tissue: null,
       recount_tissue_color_hex: null,
+      motrpac_expression_data: null,
       gtex_loading: false,
+      gtex_error: null,
       recount_loading: false,
+      recount_error: null,
       motrpac_loading: false,
+      motrpac_error: null,
       kidsfirst_loading: false,
+      kidsfirst_error: null,
 
       subset_by_sex: false,
       show_outliers: true,
@@ -313,12 +336,22 @@ export default {
           let ensembl_url = this.ensemblAPI + 'homology/id/' + r[1] + '?sequence=none&target_taxon=10116&content-type=application/json';
           let self = this;
           this.motrpac_loading = true;
+          this.motrpac_error = null;
           this.rat_homologs = null;
           axios.get(ensembl_url).then(function(r) {
             let n_orthologs = r.data.data.length;
             if (n_orthologs > 0) {
               self.rat_homologs = r.data.data[0]['homologies'];
+              let nh = self.rat_homologs.length;
+              if (nh == 0) {
+                self.motrpac_loading = false;
+                self.motrpac_error = "No Ensembl ortholog found.";
+              }
             }
+          }).catch(function(e) {
+            self.motrpac_loading = false;
+            self.motrpac_error = "No Ensembl ortholog found";
+            self.rat_homologs =[];
           });
       }
     },
@@ -350,6 +383,7 @@ export default {
       if (this.uberon2tissues && this.sel_gene) {
         this.clearExpressionData();
         this.getGeneExpressionData(this.sel_gene);
+        this.getMotrpacGeneExpressionData(this.rat_homologs);
       }
     },
     gtex_expression_data(ed) {
@@ -357,6 +391,9 @@ export default {
     },
     recount_expression_data(ed) {
      this.displayRecountExpressionData();
+    },
+    motrpac_expression_data(ed) {
+     this.displayMotrpacExpressionData();
     },
     subset_by_sex(ss) {
       this.clearExpressionData();
@@ -369,7 +406,12 @@ export default {
     log_scale(so) {
       this.clearExpressionData();
       this.getGeneExpressionData(this.sel_gene);
-    }
+    },
+    rat_homologs(rh) {
+      if ((rh != null) && (rh.length > 0)) {
+        this.getMotrpacGeneExpressionData(rh);
+      }
+    },
   },
   mounted() {
     this.initConfigs();
@@ -382,7 +424,11 @@ export default {
       } else {
         let nh = this.rat_homologs.length;
         if (nh == 0) {
-          return "no orthologs found";
+          let msg = "No Ensembl rat ortholog found";
+          if (this.sel_gene) {
+            msg = msg + " for " + this.sel_gene.gencodeId;
+          }
+          return msg;
         } else {
           return this.rat_homologs[0]['target']['species'] + " | " + this.rat_homologs[0]['target']['id'] + " | " + this.rat_homologs[0]['target']['perc_id'] + "% identity";
         }
@@ -410,6 +456,8 @@ export default {
       $("#gtex_1-svg").remove();
       this.recount_expression_data = null;
       $("#recount3_1-svg").remove();
+      this.motrpac_expression_data = null;
+      $("#motrpac_1-svg").remove();
     },
     searchClicked() {
       this.clearSelectedGene();
@@ -455,6 +503,7 @@ export default {
       gtex_url += this.gtexURLSuffix();
       this.exp_gene = gene;
       self.gtex_loading = true;
+      self.gtex_error = null;
       axios.get(gtex_url).then(function(r) {
         self.gtex_loading = false;
         self.gtex_expression_data = r.data.geneExpression;
@@ -474,14 +523,40 @@ export default {
 //      let recount_url = 'http://127.0.0.1/snaptron/gtex/genes?regions=' + gene.geneSymbolUpper + '&sids=' + all_rids.join(",");
 
       self.recount_loading = true;
+      self.recount_error = null;
       axios.get(recount_url).then(function(r) {
         self.recount_loading = false;
         self.recount_tissue = tissues[0]['tissueSiteDetail'];;
         self.recount_tissue_color_hex = tissues[0]['colorHex'];
         self.recount_expression_data = r.data;
-      });
+      }).catch(function(e) {
+        self.recount_loading = false;
+        let err = "No expression data found";
 
+        if (self.sel_gene) {
+          err = err + " for " + self.sel_gene.gencodeId;
+        }
+        self.recount_error = err;
+      });
     },
+
+    getMotrpacGeneExpressionData(homologs) {
+      let self = this;
+      let ensembl_id = homologs[0]['target']['id'];
+      let tissue = this.sel_tissue.motrpac;
+      let motrpac_url = this.motrpacAPI + '/gene/' + ensembl_id + '/' + tissue + '/tpm';
+      self.motrpac_loading = true;
+      self.motrpac_error = null;
+      axios.get(motrpac_url).then(function(r) {
+        self.motrpac_loading = false;
+        if (r.data.success) {
+          self.motrpac_expression_data = r.data;
+        } else {
+          self.motrpac_error = r.data.error;
+        }
+      });
+    },
+
     displayGTExExpressionData() {
       if (this.gtex_expression_data == null || this.tissue_info == null) return;
       let self = this;
@@ -555,6 +630,26 @@ export default {
 //          console.log("read additional gene " + gene_ids[0]);
         }
       });
+      GTExViz.groupedViolinPlot(violin_config);
+    },
+
+    displayMotrpacExpressionData() {
+      if (this.motrpac_expression_data == null || this.tissue_info == null) return;
+      let units = 'TPM';
+      let violin_config = this.violin_configs['motrpac'];
+      violin_config.data = [];
+      violin_config.showOutliers = this.show_outliers;
+      violin_config.yLabel = this.log_scale ? 'log10(' + units + '+1)' : units;
+      violin_config.scale = this.log_scale ? 'log' : 'linear';
+
+      let tissue = {
+        'group': 'MoTrPAC',
+        'label': this.sel_tissue.motrpac,
+        'values': this.motrpac_expression_data.data,
+        'color': '#' + this.sel_tissue.color_hex,
+        'fill-opacity': '0.5'
+      };
+      violin_config.data.push(tissue);
       GTExViz.groupedViolinPlot(violin_config);
     },
   }
