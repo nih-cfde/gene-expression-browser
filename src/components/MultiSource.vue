@@ -46,7 +46,7 @@
               <v-checkbox v-model="source_kidsfirst"></v-checkbox>
             </v-list-item-action>
             <v-list-item-content>
-              <span>KidsFirst <v-chip disabled color="#336699" class="dense text-white font-weight-medium ml-3">Common Fund</v-chip></span>
+              <span>Kids First <v-chip disabled color="#336699" class="dense text-white font-weight-medium ml-3">Common Fund</v-chip></span>
             </v-list-item-content>
           </v-list-item>
 
