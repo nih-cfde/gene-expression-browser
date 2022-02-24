@@ -22,5 +22,18 @@ export default new Router({
       name: 'MultiSource',
       component: () => import('@/components/MultiSource.vue'),
     },
-  ]
+    {
+      path: '/biosample',
+      name: 'Biosample',
+      component: () => import('@/components/Biosample.vue'),
+      props: route => ({
+          uberonId: route.query.uberon_id,
+	  width: +route.query.width,
+	  height: +route.query.height,
+	  numTopGenes: +route.query.numTopGenes,
+      }),
+
+    },
+
+    ]
 })
