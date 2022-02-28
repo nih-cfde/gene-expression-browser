@@ -1,7 +1,5 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import ViolinPlot from '@/components/ViolinPlot'
-import MultiSource from '@/components/MultiSource'
 
 Vue.use(Router)
 
@@ -35,9 +33,9 @@ export default new Router({
       }),
     },
     {
-      path: '/gene',
-      name: 'Gene',
-      component: () => import('@/components/Gene.vue'),
+      path: '/gene_top_tissues',
+      name: 'GeneTopTissues',
+      component: () => import('@/components/GeneTopTissues.vue'),
       props: route => ({
           gencodeId: route.query.gencode_id,
 	  width: +route.query.width,

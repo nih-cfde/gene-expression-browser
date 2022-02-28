@@ -13,16 +13,16 @@
       <v-col cols="6" class="ma-0 pa-0">
 
 	<v-data-table
+	  v-if="!subset_by_sex"
 	  v-model="selected"
 	  :headers="headers"
 	  :items="top_tissues"
 	  :items-per-page="numTopTissues"
-	  item-key="tissueSiteDetailId"
+	  item-key="key"
 	  dense
 	  hide-default-footer
 	  :height="height - vpad"
 	  >
-
 	  <template v-slot:item.tissueSiteDetail="{ item }">
 	    <td class="text-xs-left">
 	      <v-chip label small class="mr-2" :color="'#' + item.colorHex"></v-chip>
@@ -36,22 +36,66 @@
 		<span>{{ item.samplingSite }}</span>
 	      </v-tooltip>
 	    </td>
-
 	  </template>
+	  </v-data-table>
 
+
+        <!-- subset by sex -->
+        <v-data-table
+	  v-else
+	  v-model="selected"
+	  :headers="headers_by_sex"
+	  :items="top_tissues"
+	  :items-per-page="numTopTissues"
+	  item-key="key"
+	  dense
+	  hide-default-footer
+	  :height="height - vpad"
+	  >
+
+	  <template v-slot:header="props" >
+	    <thead>
+	      <tr>
+		<th colspan="1"></th>
+		<th colspan="2">female</th>
+		<th colspan="2">male</th>
+	      </tr>
+	    </thead>
+	  </template>
+	  
+	  <template v-slot:item.tissueSiteDetail="{ item }">
+	    <td class="text-xs-left">
+	      <v-chip label small class="mr-2" :color="'#' + item.colorHex"></v-chip>
+	      
+	      <v-tooltip top color="primary">
+		<template v-slot:activator="{ on: tooltip }">
+		  <span v-on="{ ...tooltip }">
+		    {{ item.tissueSiteDetail }}
+		  </span>
+		</template>
+		<span>{{ item.samplingSite }}</span>
+	      </v-tooltip>
+	    </td>
+	  </template>
 	  </v-data-table>
       </v-col>
 
       <v-col cols="6" class="ma-0 pa-0">
         <div v-if="sel_gencodeId" class="pa-0 ma-0">
+	  
 	  <v-container v-if="!hideControls" class="pa-0 ma-0">
-	    <v-row class="pa-0 ma-0">
-	      <v-col cols="4" class="pa-0 ma-0">
+	    <v-row class="pa-0 ma-0" style="padding-left: 50px;">
+	      <!-- workaround to align left edge of switches near graph y-axis -->
+	      <v-col cols="2" class="pa-0 ma-0">
+		<v-spacer />
 	      </v-col>
-	      <v-col cols="4" class="pa-0 ma-0">
+	      <v-col class="pa-0 ma-0">
+		<v-switch v-model="subset_by_sex" label="Subset by sex" class="pa-0 ma-0" dense hide-details></v-switch>
+	      </v-col>
+	      <v-col class="pa-0 ma-0">
 		<v-switch v-model="show_outliers" label="Show outliers" class="pa-0 ma-0" dense hide-details></v-switch>
 	      </v-col>
-	      <v-col cols="4" class="pa-0 ma-0">
+	      <v-col class="pa-0 ma-0">
 		<v-switch v-model="log_scale" label="Log scale" class="pa-0 ma-0" dense hide-details></v-switch>
 	      </v-col>
 	    </v-row>
@@ -106,7 +150,7 @@ var violin_config = {
 };
 
 export default {
-  name: 'Gene',
+  name: 'GeneTopTissues',
   props: {
     gencodeId: {
       type: String,
@@ -171,18 +215,50 @@ export default {
         {
           text: 'tissue',
           value: 'tissueSiteDetail',
+          sortable: false,
         },
         {
           text: 'median TPM',
           value: 'median',
+          sortable: false,
         },
         {
           text: 'samples',
           value: 'count',
+          sortable: false,
+        }
+       ],
+       headers_by_sex: [
+        {
+          text: 'tissue',
+          value: 'tissueSiteDetail',
+          sortable: false,
+        },
+        {
+          text: 'median TPM',
+          value: 'median-female',
+          sortable: false,
+        },
+        {
+          text: 'samples',
+          value: 'count-female',
+          sortable: false,
+        },
+
+        {
+          text: 'median TPM',
+          value: 'median-male',
+          sortable: false,
+        },
+        {
+          text: 'samples',
+          value: 'count-male',
+          sortable: false,
         },
 
        ],
-      };
+
+};
   },
   watch: {
     sel_gencodeId(gid) {
@@ -290,41 +366,76 @@ export default {
       expn_url += this.gtexURLSuffix();
       axios.get(expn_url).then(function(r) { self.setExpressionData(r.data.geneExpression); });
     },
-    setExpressionData(data) {
-      // compute median and sort
-      data.forEach(ed => {
-        ed['data'].sort(function(a,b) { return a - b;})
-        let dl = ed['data'].length;
+    computeMedian(data) {
+        data.sort(function(a,b) { return a - b;})
+        let dl = data.length;
         let mp = Math.floor(dl / 2.0);
         if (dl % 2) {
-          ed['median'] = ed['data'][mp];
+          return data[mp];
         } else {
-          ed['median'] = (ed['data'][mp-1] + ed['data'][mp]) / 2.0;
+          return (data[mp-1] + data[mp]) / 2.0;
         }
+    },
+    setExpressionData(data) {
+      let self = this;
+
+      // group by tissue
+      let tissue_groups = [];
+      let t2tg = {};
+
+      data.forEach(ed => {
+        let tissue = ed['tissueSiteDetailId'];
+        if (!(tissue in t2tg)) {
+          let tg = { 'tissueSiteDetailId': tissue, 'subsets': [ ed ] };
+          t2tg[tissue] = tg;
+          tissue_groups.push(tg);
+        }
+        t2tg[tissue]['subsets'].push(ed);
       });
 
-      let self = this;
-      let sorted_data = data.slice();
-      sorted_data.sort(function(a,b) {return b['median'] - a['median']});
+      // compute median
+      tissue_groups.forEach(tg => {
+        let all_data = [];
+        tg['subsets'].forEach(ed => {
+          ed['median'] = self.computeMedian(ed['data']);
+          if (ed.subsetGroup) {
+            tg['median-' + ed.subsetGroup] = ed['median'];
+            tg['count-' + ed.subsetGroup] = ed['data'].length;
+          }
+          all_data = all_data.concat(ed['data']);
+        });
+        tg['data'] = all_data;
+        tg['median'] = self.computeMedian(tg['data']);
+      });
+
+      // sort groups
+      tissue_groups.sort(function(a,b) {return b['median'] - a['median']});
 
       let top_tissues = [];
-      sorted_data.forEach(ed => {
-        let t = self.detailId2tissue[ed['tissueSiteDetailId']];
+      tissue_groups.forEach(tg => {
+        let ss1 = tg['subsets'][0];
+        let t = self.detailId2tissue[ss1['tissueSiteDetailId']];
+        let key = ss1['tissueSiteDetailId'];
         let tt = { ...t,
-                   'tissueSiteDetailId': ed['tissueSiteDetailId'],
-                   'median': ed['median'].toFixed(2),
-                   'count': ed['data'].length,
+                   'tissueSiteDetailId': ss1['tissueSiteDetailId'],
+                   'median': tg['median'].toFixed(2),
+                   'median-male': tg['median-male'] ? tg['median-male'].toFixed(2) : 'N/A',
+                   'median-female': tg['median-female'] ? tg['median-female'].toFixed(2) : 'N/A',
+                   'count': tg['data'].length,
+                   'count-male': tg['count-male'],
+                   'count-female': tg['count-female'],
+                   'key': key,
                  };
         top_tissues.push(tt);
       });
 
-      this.expression_data = sorted_data.slice(0,this.numTopTissues);
+      this.expression_data = tissue_groups.slice(0,this.numTopTissues);
       this.top_tissues = top_tissues;
     },
     displayExpressionData() {
       if (this.expression_data == null || this.tissue_info == null) return;
       let self = this;
-      let units = this.expression_data[0]['unit'];
+      let units = this.expression_data[0]['subsets'][0]['unit'];
       violin_config.data = [];
       violin_config.showOutliers = this.show_outliers;
       violin_config.yLabel = self.log_scale ? 'log10(' + units + '+1)' : units;
@@ -333,22 +444,24 @@ export default {
       violin_config.height = this.height - this.vpad;
 
       this.expression_data.forEach(ed => {
-        let t = self.detailId2tissue[ed['tissueSiteDetailId']];
-        let data = self.log_scale ? ed['data'].map(d => Math.log10(+d+1)) : ed['data'];
-        let tissue = {
-          'group': GTEX_VER,
-          'label': t['tissueSiteDetail'],
-          'values': data,
-          'color': '#' + t['colorHex'],
-          'fill-opacity': '0.5'
-        };
+       let t = self.detailId2tissue[ed['tissueSiteDetailId']];
+       ed['subsets'].forEach(ss => {
+          let data = self.log_scale ? ss['data'].map(d => Math.log10(+d+1)) : ss['data'];
+          let tissue = {
+            'group': GTEX_VER,
+            'label': t['tissueSiteDetail'],
+            'values': data,
+            'color': '#' + t['colorHex'],
+            'fill-opacity': '0.5'
+          };
 
-        if ('subsetGroup' in ed) {
-          tissue['label'] = ed['subsetGroup'];
-          tissue['group'] = t['tissueSiteDetail'];
-          tissue['color'] = SUBSET_COLORS[ed['subsetGroup']];
-        }
-        violin_config.data.push(tissue);
+          if ('subsetGroup' in ss) {
+            tissue['label'] = ss['subsetGroup'];
+            tissue['group'] = t['tissueSiteDetail'];
+            tissue['color'] = SUBSET_COLORS[ss['subsetGroup']];
+          }
+          violin_config.data.push(tissue);
+        });
       });
       GTExViz.groupedViolinPlot(violin_config);
     },
