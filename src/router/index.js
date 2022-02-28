@@ -43,6 +43,8 @@ export default new Router({
 	  width: +route.query.width,
 	  height: +route.query.height,
 	  numTopTissues: +route.query.numTopTissues,
+	  hideTitle: +route.query.hideTitle,
+	  hideControls: +route.query.hideControls,
       }),
     },
 
