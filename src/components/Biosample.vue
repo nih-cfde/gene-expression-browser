@@ -209,8 +209,7 @@ export default {
       }
     },
     gtexTissue(t) {
-// retrieve top-expressed numTopGenes genes
-console.log("getting " + this.numTopGenes + " top genes");
+      // retrieve top-expressed numTopGenes genes
       let tissue_str = "&tissueSiteDetailId=" + encodeURIComponent(t['tissueSiteDetailId']);
       let sort_str = "&sortBy=median&sortDirection=desc";
       let expn_url = GTEX_API + "expression/topExpressedGene?" + tissue_str + sort_str + this.gtexURLSuffix(GTEX_VER, this.numTopGenes, 'json');
