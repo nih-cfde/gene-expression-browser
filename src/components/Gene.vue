@@ -171,17 +171,14 @@ export default {
         {
           text: 'tissue',
           value: 'tissueSiteDetail',
-          class: 'text-subtitle-1 font-weight-bold',
         },
         {
           text: 'median TPM',
           value: 'median',
-          class: 'text-subtitle-1 font-weight-bold',
         },
         {
           text: 'samples',
           value: 'count',
-          class: 'text-subtitle-1 font-weight-bold',
         },
 
        ],
