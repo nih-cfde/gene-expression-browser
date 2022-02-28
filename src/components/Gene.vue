@@ -1,7 +1,7 @@
 <template>
   <v-container fluid fill-width class="ma-0 pa-0">
 
-    <v-row class="ma-0 pa-0">
+    <v-row v-if="!hideTitle" class="ma-0 pa-0">
       <v-col cols="12" class="ma-0 pa-0">
 	<div style="background-color: #336699;">
           <span class="font-weight-bold white--text"><img src="static/CFDE-icon-1.png" style="height: 2rem;" class="pr-2"/>{{gtexVerDescr}} normalized expression data for top {{ numTopTissues }} tissues for {{ sel_gencodeId }}</span>
@@ -43,24 +43,29 @@
       </v-col>
 
       <v-col cols="6" class="ma-0 pa-0">
-
-	<!--
-        <div v-if="sel_gencodeId" class="pt-2 mt-4 pl-3">
-  	  <h4 class="pa-0 ma-0">{{genomeVer}} Transcripts:</h4>
-  	  <div id="transcript_1" :style="'height: ' + transcriptsHeight + 'px'"></div>
-	</div>
-	-->
-	
         <div v-if="sel_gencodeId" class="pa-0 ma-0">
-          <div id='vplot_1'></div>
-       </div>
+	  <v-container v-if="!hideControls" class="pa-0 ma-0">
+	    <v-row class="pa-0 ma-0">
+	      <v-col cols="4" class="pa-0 ma-0">
+	      </v-col>
+	      <v-col cols="4" class="pa-0 ma-0">
+		<v-switch v-model="show_outliers" label="Show outliers" class="pa-0 ma-0" dense hide-details></v-switch>
+	      </v-col>
+	      <v-col cols="4" class="pa-0 ma-0">
+		<v-switch v-model="log_scale" label="Log scale" class="pa-0 ma-0" dense hide-details></v-switch>
+	      </v-col>
+	    </v-row>
+	  </v-container>
+
+          <div id='vplot_1' class="pa-0 ma-0" :height="height - vpad">
+	  </div>
+	</div>
       </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script>
-// <-- color="#c3e1e6" -->
 
 var GTEX_API = 'https://gtexportal.org/rest/v1/';
 var GTEX_VER = 'gtex_v8';
@@ -68,31 +73,16 @@ var GTEX_VER_DESCR = 'GTEx v8';
 var GENCODE_VER = 'v26';
 var GENOME_VER = 'GRCh38/hg38';
 var PAGE_SIZE = 250;
-var VPAD = 50;
+var VPAD = 15;
+var TITLE_HEIGHT = 40;
+var CONTROLS_HEIGHT = 30;
 
 var SUBSET_COLORS = {
   'male' : '#aaeeff',
   'female' : '#ffaa99',
 };
 
-var DEFAULT_UBERON_IDS_TXT = 'UBERON:0002037,UBERON:0013756';
-
 import axios from 'axios';
-
-var transcripts_min_height = 100;
-var transcript_height = 22;
-
-var transcript_config = {
-  id: 'transcript_1',
-  data: null,
-  width: 800,
-  height: transcripts_min_height,
-  marginLeft: 120,
-  marginRight: 20,
-  marginTop: 0,
-  marginBottom: 20,
-  labelPos: 'left'
-};
 
 var violin_config = {
   id: 'vplot_1',
@@ -116,7 +106,7 @@ var violin_config = {
 };
 
 export default {
-  name: 'ViolinPlot',
+  name: 'Gene',
   props: {
     gencodeId: {
       type: String,
@@ -138,6 +128,16 @@ export default {
       required: false,
       default: 10,
     },
+    hideTitle: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+    hideControls: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
   },
   data() {
     return {
@@ -147,34 +147,16 @@ export default {
       gencodeVer: GENCODE_VER,
       genomeVer: GENOME_VER,
       pageSize: PAGE_SIZE,
-      vpad: VPAD,
-
-      // gene search string
-      gene_ss: '',
-      gene_ss_results: [],
-
-      sel_gene_index: null,
 
       // gencodeId of selected gene
       sel_gencodeId: null,
       sel_geneSymbol: null,
       sel_gene: null,
 
-      // transcript divs
-      trans_divs: [],
-
-      // transcripts and exons of selected gene
-      transcripts: null,
-      exons: null,
-
       // tissue info
       tissue_info: null,
       uberon2tissues: null,
       detailId2tissue: null,
-      // cerebellum, venous blood
-      uberon_ids: DEFAULT_UBERON_IDS_TXT.split(/\s*,\s*/),
-      uberon_ids_txt: DEFAULT_UBERON_IDS_TXT,
-      default_uberon_ids_txt: DEFAULT_UBERON_IDS_TXT,
 
       // gene expression data
       expression_data: null,
@@ -206,26 +188,11 @@ export default {
       };
   },
   watch: {
-    // gene search string reset
-    gene_ss(ng) {
-      if ((ng == null) || (ng == '')) {
-        this.clearSearchResults();
-      }
-    },
     sel_gencodeId(gid) {
       if (gid == null) {
         this.clearSelectedGene();
       } else {
-        this.getGeneTranscriptsAndExons(gid);
         if (this.uberon2tissues) { this.getGeneExpressionData(gid); }
-      }
-    },
-    sel_gene_index(ind) {
-      if (ind != null) {
-        this.clearSelectedGene();
-        this.sel_gene = this.gene_ss_results[ind];
-        this.sel_gencodeId = this.gene_ss_results[ind].gencodeId;
-        this.sel_geneSymbol = this.gene_ss_results[ind].geneSymbolUpper;
       }
     },
     // index tissues by UBERON id and tissueSiteDetailId
@@ -246,12 +213,6 @@ export default {
       this.detailId2tissue = dt;
       if (this.sel_gencodeId) { this.getGeneExpressionData(this.sel_gencodeId); }
     },
-    transcripts(ts) {
-      this.displayGeneStructure();
-    },
-    exons(es) {
-      this.displayGeneStructure();
-    },
     expression_data(ed) {
      this.displayExpressionData();
     },
@@ -267,10 +228,6 @@ export default {
       this.clearExpressionData();
       this.getGeneExpressionData(this.sel_gencodeId);
     },
-    uberon_ids_txt(nt) {
-      let ids = nt.split(/\s*,\s*/);
-      this.uberon_ids = ids;
-    },
   },
   mounted() {
     this.getTissueInfo(GTEX_VER);
@@ -284,48 +241,33 @@ export default {
       });
   },
   computed: {
-    transcriptsHeight() {
-      let height = transcripts_min_height;
-      if (this.transcripts) {
-        let cheight = this.transcripts.length * transcript_height;
-        if (cheight > height) height = cheight;
+    // amount to subtract from externally-specified component height to avoid vertical scrolling
+    vpad() {
+      let vp = VPAD;
+      if (!this.hideTitle) {
+        vp += TITLE_HEIGHT;
+       }
+      if (!this.hideControls) {
+        vp += CONTROLS_HEIGHT;
       }
-      return height;
+      return vp;
     },
   },
   methods: {
-    clearSearchResults() {
-      this.clearSelectedGene();
-      this.gene_ss_results = [];
-    },
     clearSelectedGene() {
       this.sel_gene = null;
       this.sel_gencodeId = null;
       this.sel_geneSymbol = null;
-      this.sel_gene_index = null;
       this.transcripts = null;
       this.exons = null;
       this.clearExpressionData();
-//      $("#transcript_1-svg").remove();
     },
     clearExpressionData() {
       this.expression_data = null;
       $("#vplot_1-svg").remove();
     },
-    searchClicked() {
-      this.clearSelectedGene();
-      const pr = this.getGeneInfo(this.gene_ss);
-      let self = this;
-      pr.then(function(res) {
-        if (res['data']['gene']) {
-          self.gene_ss_results = res['data']['gene'];
-        }
-      });
-    },
     resetAll() {
       this.clearSelectedGene();
-      this.gene_ss = '';
-      this.uberon_ids_txt = this.default_uberon_ids_txt;
     },
     gtexURLSuffix(datasetId, pageSize, format) {
       var suffix ="&gencodeVersion=" + GENCODE_VER + "&genomeBuild=" + encodeURIComponent(GENOME_VER);
@@ -337,49 +279,6 @@ export default {
     getGeneInfo(search_str) {
       let gene_url = GTEX_API + "reference/gene?geneId=" + search_str + this.gtexURLSuffix(GTEX_VER, PAGE_SIZE, 'json');
       return axios.get(gene_url);
-    },
-    getGeneTranscripts(gencodeId) {
-      let trans_url = GTEX_API + "reference/transcript?gencodeId=" + gencodeId + this.gtexURLSuffix();
-      return axios.get(trans_url);
-    },
-    getGeneExons(gencodeId) {
-      let exon_url = GTEX_API + "reference/exon?gencodeId=" + gencodeId + this.gtexURLSuffix();
-      return axios.get(exon_url);
-    },
-    getGeneTranscriptsAndExons(gencodeId) {
-      let self = this;
-      this.getGeneTranscripts(gencodeId).then(function(r) { self.transcripts = r.data.transcript; } );
-      this.getGeneExons(gencodeId).then(function(r) { self.exons = r.data.exon; } );
-    },
-    displayGeneStructure() {
-      if ((this.transcripts == null) || (this.exons == null)) return;
-      let t2exons = {};
-      this.exons.forEach(e => {
-        let tid = e.transcriptId;
-        if (!(tid in t2exons)) {
-          t2exons[tid] = [];
-        }
-        t2exons[tid].push({
-          "chrom": e.chromosome.replace('chr',''),
-          "chromEnd": e.end,
-          "exonId": e.exonId,
-          "exonNumber": e.exonNumber,
-          "chromStart": e.start,
-          "strand": e.strand
-        });
-      });
-
-      // display all transcripts
-      let t_transcripts = this.transcripts;
-      let t_exons = {};
-      Object.keys(t2exons).forEach(k => {
-        t_exons[k] = t2exons[k];
-      });
-
-      let nt = t_transcripts.length;
-      transcript_config['height'] = this.transcriptsHeight;
-      transcript_config['data'] = { 'transcripts': t_transcripts, 'exons': t_exons };
-//      GTExViz.transcriptTracks(transcript_config);
     },
     getTissueInfo(dataset) {
       let tissue_url = GTEX_API + "dataset/tissueInfo?datasetId=" + GTEX_VER + "&format=json"
@@ -460,7 +359,7 @@ export default {
 }
 </script>
 
-<!-- doesn't work with 'scoped' - should move this into external/sitewide CSS -->
+<!-- doesn't work with 'scoped' - move this into external/sitewide CSS? -->
 <style>
 
 // violin plot
