@@ -45,6 +45,18 @@ export default new Router({
 	  hideControls: +route.query.hideControls,
       }),
     },
+    {
+      path: '/gene_transcripts',
+      name: 'GeneTranscripts',
+      component: () => import('@/components/GeneTranscripts.vue'),
+      props: route => ({
+          gencodeId: route.query.gencode_id,
+	  width: +route.query.width,
+	  height: +route.query.height,
+	  hideTitle: +route.query.hideTitle,
+	  hideControls: +route.query.hideControls,
+      }),
+    },
 
     ]
 })
