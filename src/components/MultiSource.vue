@@ -229,7 +229,7 @@ var TISSUES = [
 ]
 
 import axios from 'axios';
-import recount_map from './recount_map.js';
+import recountMap from './recount_map.js';
 
 var violin_config_default = {
   data: null,
@@ -511,9 +511,9 @@ export default {
 
       // Snaptron/Recount3
       // map tissueSiteDetail to rail ids
-      let mm = recount_map[tissues[0].tissueSiteDetail];
-      let wb_male_rids = recount_map[tissues[0].tissueSiteDetail]['male'];
-      let wb_female_rids = recount_map[tissues[0].tissueSiteDetail]['female'];
+      let mm = recountMap[tissues[0].tissueSiteDetail];
+      let wb_male_rids = recountMap[tissues[0].tissueSiteDetail]['male'];
+      let wb_female_rids = recountMap[tissues[0].tissueSiteDetail]['female'];
       let all_rids = wb_male_rids;
       all_rids = all_rids.concat(wb_female_rids);
 
