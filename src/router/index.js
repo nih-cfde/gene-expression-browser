@@ -4,7 +4,7 @@ import Router from 'vue-router'
 Vue.use(Router)
 
 export default new Router({
-    //    mode: 'hash',
+//    mode: 'hash',
     mode: 'history',
     routes: [
     {
@@ -36,6 +36,19 @@ export default new Router({
       path: '/gene_top_tissues',
       name: 'GeneTopTissues',
       component: () => import('@/components/GeneTopTissues.vue'),
+      props: route => ({
+          gencodeId: route.query.gencode_id,
+	  width: +route.query.width,
+	  height: +route.query.height,
+	  numTopTissues: +route.query.numTopTissues,
+	  hideTitle: +route.query.hideTitle,
+	  hideControls: +route.query.hideControls,
+      }),
+    },
+    {
+      path: '/gene_tissues',
+      name: 'GeneTissues',
+      component: () => import('@/components/GeneTissues.vue'),
       props: route => ({
           gencodeId: route.query.gencode_id,
 	  width: +route.query.width,
