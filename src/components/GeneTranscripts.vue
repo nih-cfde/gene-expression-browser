@@ -3,33 +3,33 @@
 
     <v-row v-if="!hideTitle" class="ma-0 pa-0">
       <v-col cols="12" class="ma-0 pa-0">
-	<div style="background-color: #336699;">
+        <div style="background-color: #336699;">
           <span class="font-weight-bold white--text"><img src="static/CFDE-icon-1.png" style="height: 2rem;" class="pr-2"/>{{genomeVer}} transcripts for {{ sel_gencodeId }} - <span v-if="transcripts">{{ transcripts.length }} isoform(s)</span></span>
-	  </div>
+          </div>
       </v-col>
     </v-row>
 
     <v-row class="ma-0 pa-0 pt-2">
       <v-col cols="6" class="ma-0 pa-0">
 
-	<v-data-table
-	  v-if="false"
-	  v-model="selected"
-	  :headers="headers"
-	  :items="transcripts"
-	  item-key="transcriptId"
-	  dense
-	  hide-default-footer
-	  :height="height - vpad"
-	  >
-	  </v-data-table>
+        <v-data-table
+          v-if="false"
+          v-model="selected"
+          :headers="headers"
+          :items="transcripts"
+          item-key="transcriptId"
+          dense
+          hide-default-footer
+          :height="height - vpad"
+          >
+          </v-data-table>
       </v-col>
 
       <v-col cols="12" class="ma-0 pa-0">
         <div v-if="sel_gencodeId" class="pa-0 ma-0">
           <div id='transcript_1' class="pa-0 ma-0" :height="height - vpad">
-	  </div>
-	</div>
+          </div>
+        </div>
       </v-col>
     </v-row>
   </v-container>
@@ -37,27 +37,27 @@
 
 <script>
 
-var GTEX_API = 'https://gtexportal.org/rest/v1/';
-var GTEX_VER = 'gtex_v8';
-var GTEX_VER_DESCR = 'GTEx v8';
-var GENCODE_VER = 'v26';
-var GENOME_VER = 'GRCh38/hg38';
-var PAGE_SIZE = 250;
-var VPAD = 15;
-var TITLE_HEIGHT = 40;
-var CONTROLS_HEIGHT = 30;
+import axios from 'axios'
+
+var GTEX_API = 'https://gtexportal.org/rest/v1/'
+var GTEX_VER = 'gtex_v8'
+var GTEX_VER_DESCR = 'GTEx v8'
+var GENCODE_VER = 'v26'
+var GENOME_VER = 'GRCh38/hg38'
+var PAGE_SIZE = 250
+var VPAD = 15
+var TITLE_HEIGHT = 40
+var CONTROLS_HEIGHT = 30
 
 var SUBSET_COLORS = {
-  'male' : '#aaeeff',
-  'female' : '#ffaa99',
-};
+  'male': '#aaeeff',
+  'female': '#ffaa99'
+}
 
-var DEFAULT_UBERON_IDS_TXT = 'UBERON:0002037,UBERON:0013756';
+var DEFAULT_UBERON_IDS_TXT = 'UBERON:0002037,UBERON:0013756'
 
-import axios from 'axios';
-
-var transcripts_min_height = 100;
-var transcript_height = 26;
+var transcripts_min_height = 100
+var transcript_height = 26
 
 var transcript_config = {
   id: 'transcript_1',
@@ -69,7 +69,7 @@ var transcript_config = {
   marginTop: 0,
   marginBottom: 20,
   labelPos: 'left'
-};
+}
 
 export default {
   name: 'GeneTranscripts',
@@ -77,30 +77,30 @@ export default {
     gencodeId: {
       type: String,
       required: true,
-      default: undefined,
+      default: undefined
     },
     width: {
       type: Number,
       required: false,
-      default: 1000,
+      default: 1000
     },
     height: {
       type: Number,
       required: false,
-      default: 600,
+      default: 600
     },
     hideTitle: {
       type: Number,
       required: false,
-      default: 0,
+      default: 0
     },
     hideControls: {
       type: Number,
       required: false,
-      default: 0,
-    },
+      default: 0
+    }
   },
-  data() {
+  data () {
     return {
       gtexAPI: GTEX_API,
       gtexVer: GTEX_VER,
@@ -130,166 +130,166 @@ export default {
         {
           text: 'tissue',
           value: 'tissueSiteDetail',
-          class: 'text-subtitle-1 font-weight-bold',
+          class: 'text-subtitle-1 font-weight-bold'
         },
         {
           text: 'median TPM',
           value: 'median',
-          class: 'text-subtitle-1 font-weight-bold',
+          class: 'text-subtitle-1 font-weight-bold'
         },
         {
           text: 'samples',
           value: 'count',
-          class: 'text-subtitle-1 font-weight-bold',
-        },
+          class: 'text-subtitle-1 font-weight-bold'
+        }
 
-       ],
-      };
+      ]
+    }
   },
   watch: {
-    sel_gencodeId(gid) {
+    sel_gencodeId (gid) {
       if (gid == null) {
-        this.clearSelectedGene();
+        this.clearSelectedGene()
       } else {
-        this.getGeneTranscriptsAndExons(gid);
+        this.getGeneTranscriptsAndExons(gid)
       }
     },
-    sel_gene_index(ind) {
+    sel_gene_index (ind) {
       if (ind != null) {
-        this.clearSelectedGene();
-        this.sel_gene = this.gene_ss_results[ind];
-        this.sel_gencodeId = this.gene_ss_results[ind].gencodeId;
-        this.sel_geneSymbol = this.gene_ss_results[ind].geneSymbolUpper;
+        this.clearSelectedGene()
+        this.sel_gene = this.gene_ss_results[ind]
+        this.sel_gencodeId = this.gene_ss_results[ind].gencodeId
+        this.sel_geneSymbol = this.gene_ss_results[ind].geneSymbolUpper
       }
     },
     // index tissues by UBERON id and tissueSiteDetailId
-    tissue_info(ti) {
-      let ut = {};
-      let dt = {};
+    tissue_info (ti) {
+      let ut = {}
+      let dt = {}
       ti.forEach(t => {
-        let key = 'UBERON:' + t['uberonId'];
+        let key = 'UBERON:' + t['uberonId']
         // mapping is not quite 1-1
         if (key in ut) {
-          ut[key].push(t);
+          ut[key].push(t)
         } else {
-          ut[key] = [t];
+          ut[key] = [t]
         }
-        dt[t['tissueSiteDetailId']] = t;
-      });
-      this.uberon2tissues = ut;
-      this.detailId2tissue = dt;
+        dt[t['tissueSiteDetailId']] = t
+      })
+      this.uberon2tissues = ut
+      this.detailId2tissue = dt
     },
-    transcripts(ts) {
-      this.displayGeneStructure();
+    transcripts (ts) {
+      this.displayGeneStructure()
     },
-    exons(es) {
-      this.displayGeneStructure();
-    },
+    exons (es) {
+      this.displayGeneStructure()
+    }
   },
-  mounted() {
-    this.getTissueInfo(GTEX_VER);
-      this.clearSelectedGene();
-      const pr = this.getGeneInfo(this.gencodeId);
-      let self = this;
-      pr.then(function(res) {
-        if (res['data']['gene']) {
-          self.sel_gencodeId = res['data']['gene'][0]['gencodeId'];
-        }
-      });
+  mounted () {
+    this.getTissueInfo(GTEX_VER)
+    this.clearSelectedGene()
+    const pr = this.getGeneInfo(this.gencodeId)
+    let self = this
+    pr.then(function (res) {
+      if (res['data']['gene']) {
+        self.sel_gencodeId = res['data']['gene'][0]['gencodeId']
+      }
+    })
   },
   computed: {
-    transcriptsHeight() {
-      let height = transcripts_min_height;
+    transcriptsHeight () {
+      let height = transcripts_min_height
       if (this.transcripts) {
-        let cheight = this.transcripts.length * transcript_height;
-        if (cheight > height) height = cheight;
+        let cheight = this.transcripts.length * transcript_height
+        if (cheight > height) height = cheight
       }
-      return height;
+      return height
     },
-    vpad() {
-      let vp = VPAD;
+    vpad () {
+      let vp = VPAD
       if (!this.hideTitle) {
-        vp += TITLE_HEIGHT;
-       }
-      if (!this.hideControls) {
-        vp += CONTROLS_HEIGHT;
+        vp += TITLE_HEIGHT
       }
-      return vp;
-    },
+      if (!this.hideControls) {
+        vp += CONTROLS_HEIGHT
+      }
+      return vp
+    }
   },
   methods: {
-    clearSelectedGene() {
-      this.sel_gene = null;
-      this.sel_gencodeId = null;
-      this.sel_geneSymbol = null;
-      this.sel_gene_index = null;
-      this.transcripts = null;
-      this.exons = null;
-      $("#transcript_1-svg").remove();
+    clearSelectedGene () {
+      this.sel_gene = null
+      this.sel_gencodeId = null
+      this.sel_geneSymbol = null
+      this.sel_gene_index = null
+      this.transcripts = null
+      this.exons = null
+      $('#transcript_1-svg').remove()
     },
-    resetAll() {
-      this.clearSelectedGene();
+    resetAll () {
+      this.clearSelectedGene()
     },
-    gtexURLSuffix(datasetId, pageSize, format) {
-      var suffix ="&gencodeVersion=" + GENCODE_VER + "&genomeBuild=" + encodeURIComponent(GENOME_VER);
-      if (datasetId) suffix += "&datasetId=" + datasetId;
-      if (pageSize) suffix += "&pageSize=" + pageSize;
-      if (format) suffix += "&format=" + format;
-      return suffix;
+    gtexURLSuffix (datasetId, pageSize, format) {
+      var suffix = '&gencodeVersion=' + GENCODE_VER + '&genomeBuild=' + encodeURIComponent(GENOME_VER)
+      if (datasetId) suffix += '&datasetId=' + datasetId
+      if (pageSize) suffix += '&pageSize=' + pageSize
+      if (format) suffix += '&format=' + format
+      return suffix
     },
-    getGeneInfo(search_str) {
-      let gene_url = GTEX_API + "reference/gene?geneId=" + search_str + this.gtexURLSuffix(GTEX_VER, PAGE_SIZE, 'json');
-      return axios.get(gene_url);
+    getGeneInfo (search_str) {
+      let gene_url = GTEX_API + 'reference/gene?geneId=' + search_str + this.gtexURLSuffix(GTEX_VER, PAGE_SIZE, 'json')
+      return axios.get(gene_url)
     },
-    getGeneTranscripts(gencodeId) {
-      let trans_url = GTEX_API + "reference/transcript?gencodeId=" + gencodeId + this.gtexURLSuffix();
-      return axios.get(trans_url);
+    getGeneTranscripts (gencodeId) {
+      let trans_url = GTEX_API + 'reference/transcript?gencodeId=' + gencodeId + this.gtexURLSuffix()
+      return axios.get(trans_url)
     },
-    getGeneExons(gencodeId) {
-      let exon_url = GTEX_API + "reference/exon?gencodeId=" + gencodeId + this.gtexURLSuffix();
-      return axios.get(exon_url);
+    getGeneExons (gencodeId) {
+      let exon_url = GTEX_API + 'reference/exon?gencodeId=' + gencodeId + this.gtexURLSuffix()
+      return axios.get(exon_url)
     },
-    getGeneTranscriptsAndExons(gencodeId) {
-      let self = this;
-      this.getGeneTranscripts(gencodeId).then(function(r) { self.transcripts = r.data.transcript; } );
-      this.getGeneExons(gencodeId).then(function(r) { self.exons = r.data.exon; } );
+    getGeneTranscriptsAndExons (gencodeId) {
+      let self = this
+      this.getGeneTranscripts(gencodeId).then(function (r) { self.transcripts = r.data.transcript })
+      this.getGeneExons(gencodeId).then(function (r) { self.exons = r.data.exon })
     },
-    displayGeneStructure() {
-      if ((this.transcripts == null) || (this.exons == null)) return;
-      let t2exons = {};
+    displayGeneStructure () {
+      if ((this.transcripts == null) || (this.exons == null)) return
+      let t2exons = {}
       this.exons.forEach(e => {
-        let tid = e.transcriptId;
+        let tid = e.transcriptId
         if (!(tid in t2exons)) {
-          t2exons[tid] = [];
+          t2exons[tid] = []
         }
         t2exons[tid].push({
-          "chrom": e.chromosome.replace('chr',''),
-          "chromEnd": e.end,
-          "exonId": e.exonId,
-          "exonNumber": e.exonNumber,
-          "chromStart": e.start,
-          "strand": e.strand
-        });
-      });
+          'chrom': e.chromosome.replace('chr', ''),
+          'chromEnd': e.end,
+          'exonId': e.exonId,
+          'exonNumber': e.exonNumber,
+          'chromStart': e.start,
+          'strand': e.strand
+        })
+      })
 
       // display all transcripts
-      let t_transcripts = this.transcripts;
-      let t_exons = {};
+      let t_transcripts = this.transcripts
+      let t_exons = {}
       Object.keys(t2exons).forEach(k => {
-        t_exons[k] = t2exons[k];
-      });
+        t_exons[k] = t2exons[k]
+      })
 
-      let nt = t_transcripts.length;
-      transcript_config['height'] = this.transcriptsHeight;
-      transcript_config['width'] = this.width;
-      transcript_config['data'] = { 'transcripts': t_transcripts, 'exons': t_exons };
-      GTExViz.transcriptTracks(transcript_config);
+      let nt = t_transcripts.length
+      transcript_config['height'] = this.transcriptsHeight
+      transcript_config['width'] = this.width
+      transcript_config['data'] = { 'transcripts': t_transcripts, 'exons': t_exons }
+      GTExViz.transcriptTracks(transcript_config)
     },
-    getTissueInfo(dataset) {
-      let tissue_url = GTEX_API + "dataset/tissueInfo?datasetId=" + GTEX_VER + "&format=json"
-      let self = this;
-      axios.get(tissue_url).then(function(r) { self.tissue_info = r.data.tissueInfo; });
-    },
+    getTissueInfo (dataset) {
+      let tissue_url = GTEX_API + 'dataset/tissueInfo?datasetId=' + GTEX_VER + '&format=json'
+      let self = this
+      axios.get(tissue_url).then(function (r) { self.tissue_info = r.data.tissueInfo })
+    }
   }
 }
 </script>
@@ -441,6 +441,6 @@ g.tick text {
 text {
     font-size: 14px !important;
     vertical-align: sub !important;
-}    
+}
 
 </style>
