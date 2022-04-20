@@ -1,64 +1,95 @@
 <template>
-  <v-container fluid fill-width class="ma-0 pa-0">
+  <v-container
+    fluid
+    fill-width
+    class="ma-0 pa-0">
 
     <v-row class="ma-0 pa-0">
-      <v-col cols="12" class="ma-0 pa-0">
+      <v-col
+        cols="12"
+        class="ma-0 pa-0">
         <div style="background-color: #336699;">
-          <span class="font-weight-bold white--text"><img src="static/CFDE-icon-1.png" style="height: 2rem;" class="pr-2"/>{{gtexVerDescr}} top {{numTopGenes}} expressed genes for {{ uberonId }} / {{ this.gtexTissue.tissueSiteDetail }}</span>
-          </div>
+          <span class="font-weight-bold white--text"><img
+            src="static/CFDE-icon-1.png"
+            style="height: 2rem;"
+            class="pr-2">{{ gtexVerDescr }} top {{ numTopGenes }} expressed genes for {{ uberonId }} / {{ gtexTissue.tissueSiteDetail }}</span>
+        </div>
       </v-col>
     </v-row>
 
     <v-row class="ma-0 pa-0">
-      <v-col cols="6" class="ma-0 pa-0">
+      <v-col
+        cols="6"
+        class="ma-0 pa-0">
 
         <v-data-table
           v-if="true"
           v-model="selected"
-          show-select
-          single-select
           :headers="headers"
           :items="genes"
           :items-per-page="numTopGenes"
+          show-select
+          single-select
           item-key="gencodeId"
           dense
           hide-default-footer
-          >
-          </v-data-table>
+        />
 
         <v-list v-else>
           <v-list-item-group v-model="sel_gene_index">
-            <v-list-item v-for="(item, i) in genes" :key="i">
+            <v-list-item
+              v-for="(item, i) in genes"
+              :key="i">
               <v-list-item-avatar v-if="false">
-                <v-tooltip v-if="item.geneType == 'protein coding'" top>
-                  <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#61cc7e">P</v-chip></template>
+                <v-tooltip
+                  v-if="item.geneType == 'protein coding'"
+                  top>
+                  <template v-slot:activator="{ on }"><v-chip
+                    color="#61cc7e"
+                    v-on="on">P</v-chip></template>
                   <span>protein coding gene</span>
                 </v-tooltip>
 
-                <v-tooltip v-else-if="item.geneType.endsWith('unprocessed pseudogene')" top>
-                  <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#ffd0d0">U</v-chip></template>
+                <v-tooltip
+                  v-else-if="item.geneType.endsWith('unprocessed pseudogene')"
+                  top>
+                  <template v-slot:activator="{ on }"><v-chip
+                    color="#ffd0d0"
+                    v-on="on">U</v-chip></template>
                   <span>{{ item.geneType }}</span>
                 </v-tooltip>
 
-                <v-tooltip v-else-if="item.geneType.endsWith('processed pseudogene')" top>
-                  <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#ffd0d0">Ps</v-chip></template>
+                <v-tooltip
+                  v-else-if="item.geneType.endsWith('processed pseudogene')"
+                  top>
+                  <template v-slot:activator="{ on }"><v-chip
+                    color="#ffd0d0"
+                    v-on="on">Ps</v-chip></template>
                   <span>{{ item.geneType }}</span>
                 </v-tooltip>
 
-                <v-tooltip v-else-if="item.geneType == 'antisense'" top>
-                  <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#d0d0ff">A</v-chip></template>
+                <v-tooltip
+                  v-else-if="item.geneType == 'antisense'"
+                  top>
+                  <template v-slot:activator="{ on }"><v-chip
+                    color="#d0d0ff"
+                    v-on="on">A</v-chip></template>
                   <span>{{ item.geneType }}</span>
                 </v-tooltip>
 
-                <v-tooltip v-else top>
-                  <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#e0e0e0">?</v-chip></template>
+                <v-tooltip
+                  v-else
+                  top>
+                  <template v-slot:activator="{ on }"><v-chip
+                    color="#e0e0e0"
+                    v-on="on">?</v-chip></template>
                   <span>{{ item.geneType }}</span>
                 </v-tooltip>
 
               </v-list-item-avatar>
 
               <v-list-item-content>
-                <v-list-item-title> {{i+1}}. {{ item.geneSymbolUpper }} | {{ item.gencodeId }} | {{ item.description }} | {{ item.median }} {{ item.unit }} </v-list-item-title>
+                <v-list-item-title> {{ i+1 }}. {{ item.geneSymbolUpper }} | {{ item.gencodeId }} | {{ item.description }} | {{ item.median }} {{ item.unit }} </v-list-item-title>
                 <v-list-item-subtitle v-if="false">{{ item.description }} <!-- <br>
                   {{ item.genomeBuild }} {{ item.chromosome }} {{ item.start }} - {{ item.end }} ({{ item.strand }})-->
                 </v-list-item-subtitle>
@@ -68,8 +99,10 @@
         </v-list>
       </v-col>
 
-      <v-col cols="6" class="ma-0 pa-0">
-        <div id='vplot_1'></div>
+      <v-col
+        cols="6"
+        class="ma-0 pa-0">
+        <div id="vplot_1"/>
       </v-col>
     </v-row>
 
@@ -77,6 +110,9 @@
 </template>
 
 <script>
+/* global $ */
+/* global GTExViz */
+
 import axios from 'axios'
 
 var GTEX_API = 'https://gtexportal.org/rest/v1/'
@@ -86,7 +122,12 @@ var GENCODE_VER = 'v26'
 var GENOME_VER = 'GRCh38/hg38'
 var PAGE_SIZE = 50
 
-var violin_config = {
+var SUBSET_COLORS = {
+  'male': '#aaeeff',
+  'female': '#ffaa99'
+}
+
+var violinConfig = {
   id: 'vplot_1',
   data: null,
   width: 800,
@@ -210,17 +251,17 @@ export default {
     },
     gtexTissue (t) {
       // retrieve top-expressed numTopGenes genes
-      let tissue_str = '&tissueSiteDetailId=' + encodeURIComponent(t['tissueSiteDetailId'])
-      let sort_str = '&sortBy=median&sortDirection=desc'
-      let expn_url = GTEX_API + 'expression/topExpressedGene?' + tissue_str + sort_str + this.gtexURLSuffix(GTEX_VER, this.numTopGenes, 'json')
+      let tissueStr = '&tissueSiteDetailId=' + encodeURIComponent(t['tissueSiteDetailId'])
+      let sortStr = '&sortBy=median&sortDirection=desc'
+      let expnUrl = GTEX_API + 'expression/topExpressedGene?' + tissueStr + sortStr + this.gtexURLSuffix(GTEX_VER, this.numTopGenes, 'json')
       let self = this
-      axios.get(expn_url).then(function (r) { self.top_expressed_genes = r.data.topExpressedGene })
+      axios.get(expnUrl).then(function (r) { self.top_expressed_genes = r.data.topExpressedGene })
     },
     top_expressed_genes (teg) {
       // retrieve detailed annotation for top-expressed genes
-      let genes_url = GTEX_API + 'reference/gene?geneId=' + encodeURIComponent(teg.map(x => x.gencodeId).join(',')) + this.gtexURLSuffix(GTEX_VER, PAGE_SIZE, 'json')
+      let genesUrl = GTEX_API + 'reference/gene?geneId=' + encodeURIComponent(teg.map(x => x.gencodeId).join(',')) + this.gtexURLSuffix(GTEX_VER, PAGE_SIZE, 'json')
       let self = this
-      axios.get(genes_url).then(function (r) { self.setGenes(r.data.gene) })
+      axios.get(genesUrl).then(function (r) { self.setGenes(r.data.gene) })
     },
     sel_gencodeId (gid) {
       if (gid == null) {
@@ -262,15 +303,15 @@ export default {
       return suffix
     },
     getTissueInfo (dataset) {
-      let tissue_url = GTEX_API + 'dataset/tissueInfo?datasetId=' + GTEX_VER + '&format=json'
+      let tissueUrl = GTEX_API + 'dataset/tissueInfo?datasetId=' + GTEX_VER + '&format=json'
       let self = this
-      axios.get(tissue_url).then(function (r) { self.tissue_info = r.data.tissueInfo })
+      axios.get(tissueUrl).then(function (r) { self.tissue_info = r.data.tissueInfo })
     },
     setGenes (gl) {
       // sort genes according to expression level
       let id2gene = {}
       gl.forEach(g => { id2gene[g.gencodeId] = g })
-      let sorted_genes = []
+      let sortedGenes = []
       let ind = 0
       this.top_expressed_genes.forEach(teg => {
         let g = id2gene[teg.gencodeId]
@@ -279,10 +320,10 @@ export default {
         g['gene'] = ++ind + '. ' + g['geneSymbolUpper']
         let descr = g['description']
         g['description'] = descr.substring(0, descr.indexOf('['))
-        sorted_genes.push(g)
+        sortedGenes.push(g)
       })
-      this.genes = sorted_genes
-      this.selected = [sorted_genes[0]]
+      this.genes = sortedGenes
+      this.selected = [sortedGenes[0]]
     },
     clearExpressionData () {
       this.expression_data = null
@@ -303,22 +344,22 @@ export default {
       let subset = null
       let self = this
       if (this.tissue_info == null) return
-      let tissues_str = '&tissueSiteDetailId=' + this.gtexTissue['tissueSiteDetailId']
-      let expn_url = GTEX_API + 'expression/geneExpression?gencodeId=' + gencodeId + tissues_str
-      if (subset) expn_url += '&attributeSubset=' + subset
-      expn_url += this.gtexURLSuffix()
-      axios.get(expn_url).then(function (r) { self.expression_data = r.data.geneExpression })
+      let tissuesStr = '&tissueSiteDetailId=' + this.gtexTissue['tissueSiteDetailId']
+      let expnUrl = GTEX_API + 'expression/geneExpression?gencodeId=' + gencodeId + tissuesStr
+      if (subset) expnUrl += '&attributeSubset=' + subset
+      expnUrl += this.gtexURLSuffix()
+      axios.get(expnUrl).then(function (r) { self.expression_data = r.data.geneExpression })
     },
     displayExpressionData () {
       if (this.expression_data == null || this.tissue_info == null) return
       let self = this
       let units = this.expression_data[0]['unit']
-      violin_config.data = []
-      violin_config.showOutliers = this.show_outliers
-      violin_config.yLabel = self.log_scale ? 'log10(' + units + '+1)' : units
-      violin_config.scale = self.log_scale ? 'log' : 'linear'
-      violin_config.width = this.width / 2
-      violin_config.height = this.height - 60
+      violinConfig.data = []
+      violinConfig.showOutliers = this.show_outliers
+      violinConfig.yLabel = self.log_scale ? 'log10(' + units + '+1)' : units
+      violinConfig.scale = self.log_scale ? 'log' : 'linear'
+      violinConfig.width = this.width / 2
+      violinConfig.height = this.height - 60
 
       this.expression_data.forEach(ed => {
         let t = self.detailId2tissue[ed['tissueSiteDetailId']]
@@ -335,9 +376,9 @@ export default {
           tissue['group'] = t['tissueSiteDetail']
           tissue['color'] = SUBSET_COLORS[ed['subsetGroup']]
         }
-        violin_config.data.push(tissue)
+        violinConfig.data.push(tissue)
       })
-      GTExViz.groupedViolinPlot(violin_config)
+      GTExViz.groupedViolinPlot(violinConfig)
     }
   }
 }

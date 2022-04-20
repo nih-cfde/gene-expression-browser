@@ -1,34 +1,51 @@
 <template>
-  <v-container fluid fill-width class="ma-0 pa-0">
+  <v-container
+    fluid
+    fill-width
+    class="ma-0 pa-0">
 
-    <v-row v-if="!hideTitle" class="ma-0 pa-0">
-      <v-col cols="12" class="ma-0 pa-0">
+    <v-row
+      v-if="!hideTitle"
+      class="ma-0 pa-0">
+      <v-col
+        cols="12"
+        class="ma-0 pa-0">
         <div style="background-color: #336699;">
-          <span class="font-weight-bold white--text"><img src="static/CFDE-icon-1.png" style="height: 2rem;" class="pr-2"/>{{genomeVer}} transcripts for {{ sel_gencodeId }} - <span v-if="transcripts">{{ transcripts.length }} isoform(s)</span></span>
-          </div>
+          <span class="font-weight-bold white--text"><img
+            src="static/CFDE-icon-1.png"
+            style="height: 2rem;"
+            class="pr-2">{{ genomeVer }} transcripts for {{ sel_gencodeId }} - <span v-if="transcripts">{{ transcripts.length }} isoform(s)</span></span>
+        </div>
       </v-col>
     </v-row>
 
     <v-row class="ma-0 pa-0 pt-2">
-      <v-col cols="6" class="ma-0 pa-0">
+      <v-col
+        cols="6"
+        class="ma-0 pa-0">
 
         <v-data-table
           v-if="false"
           v-model="selected"
           :headers="headers"
           :items="transcripts"
+          :height="height - vpad"
           item-key="transcriptId"
           dense
           hide-default-footer
-          :height="height - vpad"
-          >
-          </v-data-table>
+        />
       </v-col>
 
-      <v-col cols="12" class="ma-0 pa-0">
-        <div v-if="sel_gencodeId" class="pa-0 ma-0">
-          <div id='transcript_1' class="pa-0 ma-0" :height="height - vpad">
-          </div>
+      <v-col
+        cols="12"
+        class="ma-0 pa-0">
+        <div
+          v-if="sel_gencodeId"
+          class="pa-0 ma-0">
+          <div
+            id="transcript_1"
+            :height="height - vpad"
+            class="pa-0 ma-0"/>
         </div>
       </v-col>
     </v-row>
@@ -36,6 +53,8 @@
 </template>
 
 <script>
+/* global $ */
+/* global GTExViz */
 
 import axios from 'axios'
 
@@ -49,21 +68,14 @@ var VPAD = 15
 var TITLE_HEIGHT = 40
 var CONTROLS_HEIGHT = 30
 
-var SUBSET_COLORS = {
-  'male': '#aaeeff',
-  'female': '#ffaa99'
-}
+var transcriptsMinHeight = 100
+var transcriptHeight = 26
 
-var DEFAULT_UBERON_IDS_TXT = 'UBERON:0002037,UBERON:0013756'
-
-var transcripts_min_height = 100
-var transcript_height = 26
-
-var transcript_config = {
+var transcriptConfig = {
   id: 'transcript_1',
   data: null,
   width: 800,
-  height: transcripts_min_height,
+  height: transcriptsMinHeight,
   marginLeft: 200,
   marginRight: 20,
   marginTop: 0,
@@ -146,6 +158,26 @@ export default {
       ]
     }
   },
+  computed: {
+    transcriptsHeight () {
+      let height = transcriptsMinHeight
+      if (this.transcripts) {
+        let cheight = this.transcripts.length * transcriptHeight
+        if (cheight > height) height = cheight
+      }
+      return height
+    },
+    vpad () {
+      let vp = VPAD
+      if (!this.hideTitle) {
+        vp += TITLE_HEIGHT
+      }
+      if (!this.hideControls) {
+        vp += CONTROLS_HEIGHT
+      }
+      return vp
+    }
+  },
   watch: {
     sel_gencodeId (gid) {
       if (gid == null) {
@@ -197,26 +229,6 @@ export default {
       }
     })
   },
-  computed: {
-    transcriptsHeight () {
-      let height = transcripts_min_height
-      if (this.transcripts) {
-        let cheight = this.transcripts.length * transcript_height
-        if (cheight > height) height = cheight
-      }
-      return height
-    },
-    vpad () {
-      let vp = VPAD
-      if (!this.hideTitle) {
-        vp += TITLE_HEIGHT
-      }
-      if (!this.hideControls) {
-        vp += CONTROLS_HEIGHT
-      }
-      return vp
-    }
-  },
   methods: {
     clearSelectedGene () {
       this.sel_gene = null
@@ -237,17 +249,17 @@ export default {
       if (format) suffix += '&format=' + format
       return suffix
     },
-    getGeneInfo (search_str) {
-      let gene_url = GTEX_API + 'reference/gene?geneId=' + search_str + this.gtexURLSuffix(GTEX_VER, PAGE_SIZE, 'json')
-      return axios.get(gene_url)
+    getGeneInfo (searchStr) {
+      let geneUrl = GTEX_API + 'reference/gene?geneId=' + searchStr + this.gtexURLSuffix(GTEX_VER, PAGE_SIZE, 'json')
+      return axios.get(geneUrl)
     },
     getGeneTranscripts (gencodeId) {
-      let trans_url = GTEX_API + 'reference/transcript?gencodeId=' + gencodeId + this.gtexURLSuffix()
-      return axios.get(trans_url)
+      let transUrl = GTEX_API + 'reference/transcript?gencodeId=' + gencodeId + this.gtexURLSuffix()
+      return axios.get(transUrl)
     },
     getGeneExons (gencodeId) {
-      let exon_url = GTEX_API + 'reference/exon?gencodeId=' + gencodeId + this.gtexURLSuffix()
-      return axios.get(exon_url)
+      let exonUrl = GTEX_API + 'reference/exon?gencodeId=' + gencodeId + this.gtexURLSuffix()
+      return axios.get(exonUrl)
     },
     getGeneTranscriptsAndExons (gencodeId) {
       let self = this
@@ -273,22 +285,21 @@ export default {
       })
 
       // display all transcripts
-      let t_transcripts = this.transcripts
-      let t_exons = {}
+      let tTranscripts = this.transcripts
+      let tExons = {}
       Object.keys(t2exons).forEach(k => {
-        t_exons[k] = t2exons[k]
+        tExons[k] = t2exons[k]
       })
 
-      let nt = t_transcripts.length
-      transcript_config['height'] = this.transcriptsHeight
-      transcript_config['width'] = this.width
-      transcript_config['data'] = { 'transcripts': t_transcripts, 'exons': t_exons }
-      GTExViz.transcriptTracks(transcript_config)
+      transcriptConfig['height'] = this.transcriptsHeight
+      transcriptConfig['width'] = this.width
+      transcriptConfig['data'] = { 'transcripts': tTranscripts, 'exons': tExons }
+      GTExViz.transcriptTracks(transcriptConfig)
     },
     getTissueInfo (dataset) {
-      let tissue_url = GTEX_API + 'dataset/tissueInfo?datasetId=' + GTEX_VER + '&format=json'
+      let tissueUrl = GTEX_API + 'dataset/tissueInfo?datasetId=' + GTEX_VER + '&format=json'
       let self = this
-      axios.get(tissue_url).then(function (r) { self.tissue_info = r.data.tissueInfo })
+      axios.get(tissueUrl).then(function (r) { self.tissue_info = r.data.tissueInfo })
     }
   }
 }

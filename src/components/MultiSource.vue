@@ -1,40 +1,58 @@
 <template>
-  <v-container fluid fill-width class="ma-0 pa-0">
+  <v-container
+    fluid
+    fill-width
+    class="ma-0 pa-0">
 
     <v-row class="ma-0 pa-0">
-      <v-col cols="12" class="ma-0 pa-0">
-        <v-app-bar class="ma-0 pa-0" color="#336699">
-          <v-toolbar-title class="text-h5 ma-0 pa-0 text-white"><img src="static/CFDE-icon-1.png" style="height: 2rem;" class="pr-2"/>CFDE Multi-Source Gene Expression Browser Prototype</v-toolbar-title>
+      <v-col
+        cols="12"
+        class="ma-0 pa-0">
+        <v-app-bar
+          class="ma-0 pa-0"
+          color="#336699">
+          <v-toolbar-title class="text-h5 ma-0 pa-0 text-white"><img
+            src="static/CFDE-icon-1.png"
+            style="height: 2rem;"
+            class="pr-2">CFDE Multi-Source Gene Expression Browser Prototype</v-toolbar-title>
         </v-app-bar>
       </v-col>
     </v-row>
 
     <v-row class="ma-0 pa-0 mt-1 mr-3">
-      <v-col cols="3" class="ma-0 pa-2 pt-4">
+      <v-col
+        cols="3"
+        class="ma-0 pa-2 pt-4">
 
         <h4 class="lh_head">Data Sources</h4>
-        <v-list class="ml-2" dense>
+        <v-list
+          class="ml-2"
+          dense>
           <v-list-item>
             <v-list-item-action>
-              <v-checkbox v-model="source_gtex"></v-checkbox>
+              <v-checkbox v-model="source_gtex"/>
             </v-list-item-action>
             <v-list-item-content>
-              <span>GTEx v8 <v-chip color="#336699" class="dense text-white font-weight-medium ml-3">Common Fund</v-chip></span>
+              <span>GTEx v8 <v-chip
+                color="#336699"
+                class="dense text-white font-weight-medium ml-3">Common Fund</v-chip></span>
             </v-list-item-content>
           </v-list-item>
 
           <v-list-item>
             <v-list-item-action>
-              <v-checkbox v-model="source_motrpac"></v-checkbox>
+              <v-checkbox v-model="source_motrpac"/>
             </v-list-item-action>
             <v-list-item-content>
-              <span>MoTrPAC <v-chip color="#336699" class="dense text-white font-weight-medium ml-3">Common Fund</v-chip></span>
+              <span>MoTrPAC <v-chip
+                color="#336699"
+                class="dense text-white font-weight-medium ml-3">Common Fund</v-chip></span>
             </v-list-item-content>
           </v-list-item>
 
           <v-list-item>
             <v-list-item-action>
-              <v-checkbox v-model="source_recount3"></v-checkbox>
+              <v-checkbox v-model="source_recount3"/>
             </v-list-item-action>
             <v-list-item-content>
               <span>Recount3 - GTEx</span>
@@ -43,10 +61,13 @@
 
           <v-list-item disabled>
             <v-list-item-action>
-              <v-checkbox v-model="source_kidsfirst"></v-checkbox>
+              <v-checkbox v-model="source_kidsfirst"/>
             </v-list-item-action>
             <v-list-item-content>
-              <span>Kids First <v-chip disabled color="#336699" class="dense text-white font-weight-medium ml-3">Common Fund</v-chip></span>
+              <span>Kids First <v-chip
+                disabled
+                color="#336699"
+                class="dense text-white font-weight-medium ml-3">Common Fund</v-chip></span>
             </v-list-item-content>
           </v-list-item>
 
@@ -55,42 +76,67 @@
         <h4 class="lh_head">Gene Search</h4>
         <v-text-field
           v-model="gene_ss"
-          v-on:keyup.enter="searchClicked"
           label="Enter gene id e.g., MYLK, PTEN, BRCA"
           clearable
           clear-icon="mdi-close-circle"
           solo
           class="pa-0 ma-0 pt-2 ml-2"
-          ></v-text-field>
-        <v-btn v-on:click="searchClicked" :disabled="gene_ss == null || gene_ss == ''" class="ml-2">search</v-btn>
+          @keyup.enter="searchClicked"
+        />
+        <v-btn
+          :disabled="gene_ss == null || gene_ss == ''"
+          class="ml-2"
+          @click="searchClicked">search</v-btn>
 
-<!--    <h4 class="mt-4 pt-2 ml-2">Search results ({{ gene_ss_results.length }}):</h4> -->
+        <!--    <h4 class="mt-4 pt-2 ml-2">Search results ({{ gene_ss_results.length }}):</h4> -->
         <v-list class="ml-2">
           <v-list-item-group v-model="sel_gene_index">
-            <v-list-item v-for="(item, i) in gene_ss_results.slice(0, max_gene_results)" :key="i">
+            <v-list-item
+              v-for="(item, i) in gene_ss_results.slice(0, max_gene_results)"
+              :key="i">
               <v-list-item-avatar>
-                <v-tooltip v-if="item.geneType == 'protein coding'" top>
-                  <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#61cc7e">P</v-chip></template>
+                <v-tooltip
+                  v-if="item.geneType == 'protein coding'"
+                  top>
+                  <template v-slot:activator="{ on }"><v-chip
+                    color="#61cc7e"
+                    v-on="on">P</v-chip></template>
                   <span>protein coding gene</span>
                 </v-tooltip>
 
-                <v-tooltip v-else-if="item.geneType.endsWith('unprocessed pseudogene')" top>
-                  <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#ffd0d0">U</v-chip></template>
+                <v-tooltip
+                  v-else-if="item.geneType.endsWith('unprocessed pseudogene')"
+                  top>
+                  <template v-slot:activator="{ on }"><v-chip
+                    color="#ffd0d0"
+                    v-on="on">U</v-chip></template>
                   <span>{{ item.geneType }}</span>
                 </v-tooltip>
 
-                <v-tooltip v-else-if="item.geneType.endsWith('processed pseudogene')" top>
-                  <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#ffd0d0">Ps</v-chip></template>
+                <v-tooltip
+                  v-else-if="item.geneType.endsWith('processed pseudogene')"
+                  top>
+                  <template v-slot:activator="{ on }"><v-chip
+                    color="#ffd0d0"
+                    v-on="on">Ps</v-chip></template>
                   <span>{{ item.geneType }}</span>
                 </v-tooltip>
 
-                <v-tooltip v-else-if="item.geneType == 'antisense'" top>
-                  <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#d0d0ff">A</v-chip></template>
+                <v-tooltip
+                  v-else-if="item.geneType == 'antisense'"
+                  top>
+                  <template v-slot:activator="{ on }"><v-chip
+                    color="#d0d0ff"
+                    v-on="on">A</v-chip></template>
                   <span>{{ item.geneType }}</span>
                 </v-tooltip>
 
-                <v-tooltip v-else top>
-                  <template v-slot:activator="{ on: tooltip }"><v-chip v-on="{ ...tooltip }" color="#e0e0e0">?</v-chip></template>
+                <v-tooltip
+                  v-else
+                  top>
+                  <template v-slot:activator="{ on }"><v-chip
+                    color="#e0e0e0"
+                    v-on="on">?</v-chip></template>
                   <span>{{ item.geneType }}</span>
                 </v-tooltip>
 
@@ -114,43 +160,70 @@
         </v-list>
 
         <h4 class="lh_head">Tissue</h4>
-        <v-radio-group v-model="sel_tissue" class="ml-2">
-          <v-radio v-for="(item, i) in tissues" :key="i" :label="item.uberon_id + ' - ' +  item.name" :value="item">
-          </v-radio>
+        <v-radio-group
+          v-model="sel_tissue"
+          class="ml-2">
+          <v-radio
+            v-for="(item, i) in tissues"
+            :key="i"
+            :label="item.uberon_id + ' - ' + item.name"
+            :value="item"/>
         </v-radio-group>
 
       </v-col>
 
-      <v-col cols="9" class="ma-0 pa-2">
+      <v-col
+        cols="9"
+        class="ma-0 pa-2">
 
         <!-- 2 x 2 layout of data sources -->
 
         <v-container class="ma-0 pa-0 ml-3">
           <v-row class="ma-0 pa-0">
 
-            <v-col cols="6" class="ma-0 pa-2">
+            <v-col
+              cols="6"
+              class="ma-0 pa-2">
               <div class="dframe ma-1 pa-0 mt-0">
                 <div class="dframe_title pa-1 pl-3 pt-2">
                   <h4>GTEx v8</h4>
                   <h6>{{ sel_gene ? sel_gene.gencodeId + " | " + sel_gene.geneSymbolUpper : "no gene selected" }}</h6>
                 </div>
-                <div id='gtex_1' class="vplot">
-                  <v-progress-circular v-if="gtex_loading" indeterminate color="primary" class="ma-4"></v-progress-circular>
-                  <v-alert v-else-if="gtex_error" type="warning">{{ gtex_error }}</v-alert>
+                <div
+                  id="gtex_1"
+                  class="vplot">
+                  <v-progress-circular
+                    v-if="gtex_loading"
+                    indeterminate
+                    color="primary"
+                    class="ma-4"/>
+                  <v-alert
+                    v-else-if="gtex_error"
+                    type="warning">{{ gtex_error }}</v-alert>
                 </div>
                 <div class="dframe_footer pa-1 pl-3"><span class="font-italic">API:</span> {{ gtexAPI }}</div>
               </div>
             </v-col>
 
-            <v-col cols="6" class="ma-0 pa-2">
+            <v-col
+              cols="6"
+              class="ma-0 pa-2">
               <div class="dframe ma-1 pa-0 mt-0">
                 <div class="dframe_title pa-1 pl-3 pt-2">
                   <h4>MoTrPAC</h4>
                   <h6>{{ motrpacTitle }}</h6>
                 </div>
-                <div id='motrpac_1' class='vplot'>
-                  <v-progress-circular v-if="motrpac_loading" indeterminate color="primary" class="ma-4"></v-progress-circular>
-                  <v-alert v-else-if="motrpac_error" type="warning">{{ motrpac_error }}</v-alert>
+                <div
+                  id="motrpac_1"
+                  class="vplot">
+                  <v-progress-circular
+                    v-if="motrpac_loading"
+                    indeterminate
+                    color="primary"
+                    class="ma-4"/>
+                  <v-alert
+                    v-else-if="motrpac_error"
+                    type="warning">{{ motrpac_error }}</v-alert>
                 </div>
                 <div class="dframe_footer pa-1 pl-3"><span class="font-italic">source:</span>Ensembl orthologs, flat file MoTrPAC data</div>
               </div>
@@ -158,29 +231,51 @@
           </v-row>
 
           <v-row class="ma-0 pa-0">
-            <v-col cols="6" class="ma-0 pa-2">
+            <v-col
+              cols="6"
+              class="ma-0 pa-2">
               <div class="dframe ma-1 pa-0">
                 <div class="dframe_title pa-1 pl-3 pt-2">
                   <h4>Recount3 - GTEx</h4>
                   <h6>{{ sel_gene ? sel_gene.gencodeId + " | " + sel_gene.geneSymbolUpper : "no gene selected" }}</h6>
                 </div>
-                <div id='recount3_1' class='vplot'>
-                  <v-progress-circular v-if="recount_loading" indeterminate color="primary" class="ma-4"></v-progress-circular>
-                  <v-alert v-else-if="recount_error" type="warning">{{ recount_error }}</v-alert>
+                <div
+                  id="recount3_1"
+                  class="vplot">
+                  <v-progress-circular
+                    v-if="recount_loading"
+                    indeterminate
+                    color="primary"
+                    class="ma-4"/>
+                  <v-alert
+                    v-else-if="recount_error"
+                    type="warning">{{ recount_error }}</v-alert>
                 </div>
                 <div class="dframe_footer pa-1 pl-3"><span class="font-italic">API:</span> http://snaptron.cs.jhu.edu/gtex/</div>
               </div>
             </v-col>
 
-            <v-col cols="6" class="ma-0 pa-2">
-              <div v-if="source_kidsfirst" class="dframe ma-1 pa-0">
+            <v-col
+              cols="6"
+              class="ma-0 pa-2">
+              <div
+                v-if="source_kidsfirst"
+                class="dframe ma-1 pa-0">
                 <div class="dframe_title pa-1 pl-3 pt-2">
                   <h4>KidsFirst</h4>
                   <h6>{{ "no gene selected" }}</h6>
                 </div>
-                <div id='kidsfirst_1' class='vplot'>
-                  <v-progress-circular v-if="kidsfirst_loading" indeterminate color="primary" class="ma-4"></v-progress-circular>
-                  <v-alert v-else-if="kidsfirst_error" type="warning">{{ kidsfirst_error }}</v-alert>
+                <div
+                  id="kidsfirst_1"
+                  class="vplot">
+                  <v-progress-circular
+                    v-if="kidsfirst_loading"
+                    indeterminate
+                    color="primary"
+                    class="ma-4"/>
+                  <v-alert
+                    v-else-if="kidsfirst_error"
+                    type="warning">{{ kidsfirst_error }}</v-alert>
                 </div>
                 <div class="dframe_footer pa-1 pl-3"><span class="font-italic">source:</span> no data available</div>
               </div>
@@ -195,6 +290,9 @@
 </template>
 
 <script>
+/* global $ */
+/* global GTExViz */
+
 // GTEx
 import axios from 'axios'
 import recountMap from './recount_map.js'
@@ -231,7 +329,7 @@ var TISSUES = [
   { 'name': 'gastrocnemius medialis', 'uberon_id': 'UBERON:0011907', 'motrpac': 'gastrocnemius', 'color_hex': 'aaaaff' } // gtex = muscle - skeletal
 ]
 
-var violin_config_default = {
+var violinConfigDefault = {
   data: null,
   width: 600,
   height: 440,
@@ -278,7 +376,7 @@ export default {
       max_gene_results: 5,
 
       // violin plot configuration
-      violin_configs: {},
+      violinConfigs: {},
 
       // selected gene (gencodeId = ENGS id, geneSymbolUpper = gene symbol)
       sel_gene: null,
@@ -318,10 +416,28 @@ export default {
       source_motrpac: true
     }
   },
+  computed: {
+    motrpacTitle () {
+      if (this.rat_homologs == null) {
+        return 'no gene selected'
+      } else {
+        let nh = this.rat_homologs.length
+        if (nh === 0) {
+          let msg = 'No Ensembl rat ortholog found'
+          if (this.sel_gene) {
+            msg = msg + ' for ' + this.sel_gene.gencodeId
+          }
+          return msg
+        } else {
+          return this.rat_homologs[0]['target']['species'] + ' | ' + this.rat_homologs[0]['target']['id'] + ' | ' + this.rat_homologs[0]['target']['perc_id'] + '% identity'
+        }
+      }
+    }
+  },
   watch: {
     // gene search string reset
     gene_ss (ng) {
-      if ((ng == null) || (ng == '')) {
+      if ((ng == null) || (ng === '')) {
         this.clearSearchResults()
       }
     },
@@ -333,17 +449,17 @@ export default {
         // strip gene version number
         let r = gene.gencodeId.match(/^(ENSG\d+)\.\d+$/)
         // look up orthologs via Ensembl
-        let ensembl_url = this.ensemblAPI + 'homology/id/' + r[1] + '?sequence=none&target_taxon=10116&content-type=application/json'
+        let ensemblUrl = this.ensemblAPI + 'homology/id/' + r[1] + '?sequence=none&target_taxon=10116&content-type=application/json'
         let self = this
         this.motrpac_loading = true
         this.motrpac_error = null
         this.rat_homologs = null
-        axios.get(ensembl_url).then(function (r) {
-          let n_orthologs = r.data.data.length
-          if (n_orthologs > 0) {
+        axios.get(ensemblUrl).then(function (r) {
+          let nOrthologs = r.data.data.length
+          if (nOrthologs > 0) {
             self.rat_homologs = r.data.data[0]['homologies']
             let nh = self.rat_homologs.length
-            if (nh == 0) {
+            if (nh === 0) {
               self.motrpac_loading = false
               self.motrpac_error = 'No Ensembl ortholog found.'
             }
@@ -417,29 +533,11 @@ export default {
     this.initConfigs()
     this.getTissueInfo(GTEX_VER)
   },
-  computed: {
-    motrpacTitle () {
-      if (this.rat_homologs == null) {
-        return 'no gene selected'
-      } else {
-        let nh = this.rat_homologs.length
-        if (nh == 0) {
-          let msg = 'No Ensembl rat ortholog found'
-          if (this.sel_gene) {
-            msg = msg + ' for ' + this.sel_gene.gencodeId
-          }
-          return msg
-        } else {
-          return this.rat_homologs[0]['target']['species'] + ' | ' + this.rat_homologs[0]['target']['id'] + ' | ' + this.rat_homologs[0]['target']['perc_id'] + '% identity'
-        }
-      }
-    }
-  },
   methods: {
     initConfigs () {
       SOURCES.forEach(s => {
-        this.violin_configs[s] = { ...violin_config_default }
-        this.violin_configs[s]['id'] = s + '_1'
+        this.violinConfigs[s] = { ...violinConfigDefault }
+        this.violinConfigs[s]['id'] = s + '_1'
       })
     },
     clearSearchResults () {
@@ -476,14 +574,14 @@ export default {
       if (format) suffix += '&format=' + format
       return suffix
     },
-    getGeneInfo (search_str) {
-      let gene_url = GTEX_API + 'reference/gene?geneId=' + search_str + this.gtexURLSuffix(GTEX_VER, PAGE_SIZE, 'json')
-      return axios.get(gene_url)
+    getGeneInfo (searchStr) {
+      let geneUrl = GTEX_API + 'reference/gene?geneId=' + searchStr + this.gtexURLSuffix(GTEX_VER, PAGE_SIZE, 'json')
+      return axios.get(geneUrl)
     },
     getTissueInfo (dataset) {
-      let tissue_url = GTEX_API + 'dataset/tissueInfo?datasetId=' + GTEX_VER + '&format=json'
+      let tissueUrl = GTEX_API + 'dataset/tissueInfo?datasetId=' + GTEX_VER + '&format=json'
       let self = this
-      axios.get(tissue_url).then(function (r) { self.tissue_info = r.data.tissueInfo })
+      axios.get(tissueUrl).then(function (r) { self.tissue_info = r.data.tissueInfo })
     },
     getGeneExpressionData (gene) {
       let subset = (this.subset_by_sex) ? 'sex' : null
@@ -494,17 +592,17 @@ export default {
       if (this.sel_tissue && this.uberon2tissues) {
         tissues = tissues.concat(this.uberon2tissues[this.sel_tissue.uberon_id])
       }
-      if (tissues.length == 0) return
+      if (tissues.length === 0) return
 
       // GTEx v8
-      let tissues_str = '&tissueSiteDetailId=' + encodeURIComponent(tissues.map(t => t['tissueSiteDetailId']).join(','))
-      let gtex_url = GTEX_API + 'expression/geneExpression?gencodeId=' + gene.gencodeId + tissues_str
-      if (subset) gtex_url += '&attributeSubset=' + subset
-      gtex_url += this.gtexURLSuffix()
+      let tissuesStr = '&tissueSiteDetailId=' + encodeURIComponent(tissues.map(t => t['tissueSiteDetailId']).join(','))
+      let gtexUrl = GTEX_API + 'expression/geneExpression?gencodeId=' + gene.gencodeId + tissuesStr
+      if (subset) gtexUrl += '&attributeSubset=' + subset
+      gtexUrl += this.gtexURLSuffix()
       this.exp_gene = gene
       self.gtex_loading = true
       self.gtex_error = null
-      axios.get(gtex_url).then(function (r) {
+      axios.get(gtexUrl).then(function (r) {
         self.gtex_loading = false
         self.gtex_expression_data = r.data.geneExpression
       })
@@ -512,19 +610,19 @@ export default {
       // Snaptron/Recount3
       // map tissueSiteDetail to rail ids
       let mm = recountMap[tissues[0].tissueSiteDetail]
-      let wb_male_rids = recountMap[tissues[0].tissueSiteDetail]['male']
-      let wb_female_rids = recountMap[tissues[0].tissueSiteDetail]['female']
-      let all_rids = wb_male_rids
-      all_rids = all_rids.concat(wb_female_rids)
+      let wbMaleRids = mm['male']
+      let wbFemaleRids = mm['female']
+      let allRids = wbMaleRids
+      allRids = allRids.concat(wbFemaleRids)
 
       // lookup by gencodeId
-      let recount_url = 'http://127.0.0.1/snaptron/gtex/genes?regions=' + gene.gencodeId + '&sids=' + all_rids.join(',')
+      let recountUrl = 'http://127.0.0.1/snaptron/gtex/genes?regions=' + gene.gencodeId + '&sids=' + allRids.join(',')
       // lookup by gene symbol
-      //      let recount_url = 'http://127.0.0.1/snaptron/gtex/genes?regions=' + gene.geneSymbolUpper + '&sids=' + all_rids.join(",");
+      //      let recountUrl = 'http://127.0.0.1/snaptron/gtex/genes?regions=' + gene.geneSymbolUpper + '&sids=' + allRids.join(",");
 
       self.recount_loading = true
       self.recount_error = null
-      axios.get(recount_url).then(function (r) {
+      axios.get(recountUrl).then(function (r) {
         self.recount_loading = false
         self.recount_tissue = tissues[0]['tissueSiteDetail']
         self.recount_tissue_color_hex = tissues[0]['colorHex']
@@ -542,12 +640,12 @@ export default {
 
     getMotrpacGeneExpressionData (homologs) {
       let self = this
-      let ensembl_id = homologs[0]['target']['id']
+      let ensemblId = homologs[0]['target']['id']
       let tissue = this.sel_tissue.motrpac
-      let motrpac_url = this.motrpacAPI + '/gene/' + ensembl_id + '/' + tissue + '/tpm'
+      let motrpacUrl = this.motrpacAPI + '/gene/' + ensemblId + '/' + tissue + '/tpm'
       self.motrpac_loading = true
       self.motrpac_error = null
-      axios.get(motrpac_url).then(function (r) {
+      axios.get(motrpacUrl).then(function (r) {
         self.motrpac_loading = false
         if (r.data.success) {
           self.motrpac_expression_data = r.data
@@ -565,11 +663,11 @@ export default {
       if (this.gtex_expression_data == null || this.tissue_info == null) return
       let self = this
       let units = this.gtex_expression_data[0]['unit']
-      let violin_config = this.violin_configs['gtex']
-      violin_config.data = []
-      violin_config.showOutliers = this.show_outliers
-      violin_config.yLabel = self.log_scale ? 'log10(' + units + '+1)' : units
-      violin_config.scale = self.log_scale ? 'log' : 'linear'
+      let violinConfig = this.violinConfigs['gtex']
+      violinConfig.data = []
+      violinConfig.showOutliers = this.show_outliers
+      violinConfig.yLabel = self.log_scale ? 'log10(' + units + '+1)' : units
+      violinConfig.scale = self.log_scale ? 'log' : 'linear'
 
       this.gtex_expression_data.forEach(ed => {
         let t = self.detailId2tissue[ed['tissueSiteDetailId']]
@@ -587,9 +685,9 @@ export default {
           tissue['group'] = t['tissueSiteDetail']
           tissue['color'] = SUBSET_COLORS[ed['subsetGroup']]
         }
-        this.violin_configs['gtex'].data.push(tissue)
+        this.violinConfigs['gtex'].data.push(tissue)
       })
-      GTExViz.groupedViolinPlot(this.violin_configs['gtex'])
+      GTExViz.groupedViolinPlot(this.violinConfigs['gtex'])
     },
 
     // fields in tab-delimited Snaptron response:
@@ -598,25 +696,25 @@ export default {
       if (this.recount_expression_data == null || this.tissue_info == null) return
       let units = 'raw count'
       let self = this
-      let violin_config = this.violin_configs['recount3']
-      violin_config.data = []
-      violin_config.showOutliers = this.show_outliers
-      violin_config.yLabel = self.log_scale ? 'log10(' + units + '+1)' : units
-      violin_config.scale = self.log_scale ? 'log' : 'linear'
+      let violinConfig = this.violinConfigs['recount3']
+      violinConfig.data = []
+      violinConfig.showOutliers = this.show_outliers
+      violinConfig.yLabel = self.log_scale ? 'log10(' + units + '+1)' : units
+      violinConfig.scale = self.log_scale ? 'log' : 'linear'
 
       // parse data
       let lines = this.recount_expression_data.split('\n')
-      lines.filter(l => l != '').forEach(l => {
+      lines.filter(l => l !== '').forEach(l => {
         let fields = l.split('\t')
-        let gene_ids = fields[11].split(':')
-        if (gene_ids[0] == 'gene_id') {
+        let geneIds = fields[11].split(':')
+        if (geneIds[0] === 'gene_id') {
         // header line
-        } else if ((gene_ids[0] == this.exp_gene.gencodeId) || (gene_ids[1] == this.exp_gene.geneSymbolUpper)) {
+        } else if ((geneIds[0] === this.exp_gene.gencodeId) || (geneIds[1] === this.exp_gene.geneSymbolUpper)) {
           let samples = fields[12]
-          let sample_counts = samples.split(',')
+          let sampleCounts = samples.split(',')
           let data = []
-          sample_counts.forEach(sc => {
-            if (sc != '') {
+          sampleCounts.forEach(sc => {
+            if (sc !== '') {
               let fs = sc.split(':')
               data.push(fs[1] * 1.0)
             }
@@ -629,22 +727,22 @@ export default {
             'color': '#' + self.recount_tissue_color_hex,
             'fill-opacity': '0.5'
           }
-          violin_config.data.push(tissue)
+          violinConfig.data.push(tissue)
         } else {
-          //          console.log("read additional gene " + gene_ids[0]);
+          //          console.log("read additional gene " + geneIds[0]);
         }
       })
-      GTExViz.groupedViolinPlot(violin_config)
+      GTExViz.groupedViolinPlot(violinConfig)
     },
 
     displayMotrpacExpressionData () {
       if (this.motrpac_expression_data == null || this.tissue_info == null) return
       let units = 'TPM'
-      let violin_config = this.violin_configs['motrpac']
-      violin_config.data = []
-      violin_config.showOutliers = this.show_outliers
-      violin_config.yLabel = this.log_scale ? 'log10(' + units + '+1)' : units
-      violin_config.scale = this.log_scale ? 'log' : 'linear'
+      let violinConfig = this.violinConfigs['motrpac']
+      violinConfig.data = []
+      violinConfig.showOutliers = this.show_outliers
+      violinConfig.yLabel = this.log_scale ? 'log10(' + units + '+1)' : units
+      violinConfig.scale = this.log_scale ? 'log' : 'linear'
 
       let tissue = {
         'group': 'MoTrPAC',
@@ -653,8 +751,8 @@ export default {
         'color': '#' + this.sel_tissue.color_hex,
         'fill-opacity': '0.5'
       }
-      violin_config.data.push(tissue)
-      GTExViz.groupedViolinPlot(violin_config)
+      violinConfig.data.push(tissue)
+      GTExViz.groupedViolinPlot(violinConfig)
     }
   }
 }

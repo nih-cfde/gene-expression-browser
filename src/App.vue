@@ -1,5 +1,7 @@
 <template>
-  <v-app id="app" class="ma-0 pa-0">
+  <v-app
+    id="app"
+    class="ma-0 pa-0">
     <router-view class="ma-0 pa-0"/>
   </v-app>
 </template>
