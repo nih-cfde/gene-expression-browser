@@ -402,23 +402,18 @@ export default {
       this.displayExpressionData()
     },
     subset_by_sex () {
-      this.clearExpressionData()
       this.getGeneExpressionData(this.sel_gencodeId)
     },
     show_outliers () {
-      this.clearExpressionData()
-      this.getGeneExpressionData(this.sel_gencodeId)
+      this.displayExpressionData()
     },
     log_scale () {
-      this.clearExpressionData()
-      this.getGeneExpressionData(this.sel_gencodeId)
+      this.displayExpressionData()
     },
     selected () {
-      this.removeViolinPlot()
       this.displayExpressionData()
     },
     tissue_sel_mode () {
-      this.removeViolinPlot()
       this.displayExpressionData()
     }
   },
@@ -548,6 +543,7 @@ export default {
       this.allTissues = topTissues.sort(function (a, b) { return a.tissue.tissueSiteDetail.localeCompare(b.tissue.tissueSiteDetail) })
     },
     displayExpressionData () {
+      this.removeViolinPlot()
       if (this.expressionData == null || this.tissue_info == null) return
       let expData = null
 
