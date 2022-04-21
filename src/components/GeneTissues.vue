@@ -491,7 +491,7 @@ export default {
       data.forEach(ed => {
         let tissue = ed['tissueSiteDetailId']
         if (!(tissue in t2tg)) {
-          let tg = { 'tissueSiteDetailId': tissue, 'subsets': [ ed ] }
+          let tg = { 'tissueSiteDetailId': tissue, 'subsets': [] }
           t2tg[tissue] = tg
           tissueGroups.push(tg)
         }
