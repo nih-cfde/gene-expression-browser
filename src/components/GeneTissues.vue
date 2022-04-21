@@ -23,7 +23,7 @@
       <v-col
         cols="6"
         class="ma-0 pa-0">
-	
+
         <!-- tissue selection mode -->
         <v-radio-group
           v-model="tissue_sel_mode"
@@ -31,8 +31,8 @@
           row
           class="pa-0 ma-0 pl-3 py-2"
           hide-details
-          >
-	  Compare:
+        >
+          Compare:
           <v-radio
             key="tsm-1"
             :label="'Top ' + numTopTissues + ' tissues'"
@@ -49,16 +49,16 @@
           />
         </v-radio-group>
 
-	<v-text-field
-	  v-if="showSelected"
-	  v-model="tissueSearch"
+        <v-text-field
+          v-if="showSelected"
+          v-model="tissueSearch"
           append-icon="mdi-magnify"
           label="Search"
           single-line
           hide-details
-	  class="ma-0 pa-0 ml-3 mb-1"
-	  ></v-text-field>
-	
+          class="ma-0 pa-0 ml-3 mb-1"
+        />
+
         <!-- don't subset by sex -->
         <v-data-table
           v-if="!subset_by_sex"
@@ -67,19 +67,19 @@
           :items="tableTissues"
           :items-per-page="showSelected ? allTissues.length : numTopTissues"
           :height="height - vpad"
-	  item-key="tissueSiteDetailId"
-	  :show-select="showSelected"
-	  :search="tissueSearch"
+          :show-select="showSelected"
+          :search="tissueSearch"
+          item-key="tissueSiteDetailId"
           dense
           hide-default-footer
-          >
+        >
           <template v-slot:item.tissueSiteDetail="{ item }">
             <td class="text-xs-left">
               <v-chip
                 :color="'#' + item.colorHex"
                 label
                 small
-                class="mr-2">{{item.rank}}</v-chip>
+                class="mr-2">{{ item.rank }}</v-chip>
 
               <v-tooltip
                 top
@@ -101,11 +101,11 @@
           v-model="selected"
           :headers="headers_by_sex"
           :items="tableTissues"
-	  :items-per-page="showSelected ? allTissues.length : numTopTissues"
+          :items-per-page="showSelected ? allTissues.length : numTopTissues"
           :height="height - vpad"
+          :show-select="showSelected"
+          :search="tissueSearch"
           item-key="tissueSiteDetailId"
-	  :show-select="showSelected"
-	  :search="tissueSearch"
           dense
           hide-default-footer
         >
@@ -365,11 +365,11 @@ export default {
       }
       return vp
     },
-    showSelected() {
-      return this.tissue_sel_mode == 'custom';
+    showSelected () {
+      return this.tissue_sel_mode === 'custom'
     },
-    tableTissues() {
-      return this.showSelected ? this.allTissues : this.topTissues;
+    tableTissues () {
+      return this.showSelected ? this.allTissues : this.topTissues
     }
   },
   watch: {
@@ -442,7 +442,7 @@ export default {
       this.exons = null
       this.clearExpressionData()
     },
-    removeViolinPlot() {
+    removeViolinPlot () {
       $('#vplot_1-svg').remove()
     },
     clearExpressionData () {
@@ -543,22 +543,22 @@ export default {
       })
 
       this.expressionData = tissueGroups.slice(0, this.numTopTissues)
-      this.allExpressionData = tissueGroups;
+      this.allExpressionData = tissueGroups
       this.topTissues = topTissues.slice(0, this.numTopTissues)
-      this.allTissues = topTissues.sort(function (a,b) { return a.tissue.tissueSiteDetail.localeCompare(b.tissue.tissueSiteDetail); })
+      this.allTissues = topTissues.sort(function (a, b) { return a.tissue.tissueSiteDetail.localeCompare(b.tissue.tissueSiteDetail) })
     },
     displayExpressionData () {
       if (this.expressionData == null || this.tissue_info == null) return
-      let expData = null;
+      let expData = null
 
       if (this.showSelected) {
         // filter expression data by selected tissues
-        if (this.selected.length == 0) return;
-        let selTissues = {};
-        this.selected.forEach(s => {selTissues[s['tissueSiteDetailId']] = 1;});
-        expData = this.allExpressionData.filter(d => d['tissueSiteDetailId'] in selTissues);
+        if (this.selected.length === 0) return
+        let selTissues = {}
+        this.selected.forEach(s => { selTissues[s['tissueSiteDetailId']] = 1 })
+        expData = this.allExpressionData.filter(d => d['tissueSiteDetailId'] in selTissues)
       } else {
-        expData = this.expressionData;
+        expData = this.expressionData
       }
 
       let self = this
