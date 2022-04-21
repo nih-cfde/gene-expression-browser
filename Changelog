@@ -1,0 +1,8 @@
+CFDE-20220430.1
+ -Generalize GeneTopTissues iframe to allow user-selected tissues (#4)
+
+CFDE-20220228.1 (Februar 28, 2022)
+ -Knowledgebase/Markdown compatible iframes.
+
+CFDE-20211130.1 (November 30, 2021)
+ -Initial use case 1 prototype.

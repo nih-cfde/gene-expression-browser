@@ -19,46 +19,107 @@
       </v-col>
     </v-row>
 
-    <!-- tissue selection mode -->
-    <v-row class="ma-0 pa-0 pt-2">
-      <v-col
-        cols="12"
-        class="ma-0 pa-0">
-        <v-radio-group
-          v-model="tissue_sel_mode"
-          mandatory
-          row>
-          <v-radio
-            key="tsm-1"
-            label="Top N"
-            value="top"
-          />
-          <v-radio
-            key="tsm-2"
-            label="Specific tissue(s)"
-            value="custom"
-          />
-        </v-radio-group>
-      </v-col>
-    </v-row>
-
-    <v-row class="ma-0 pa-0 pt-2">
+    <v-row class="ma-0 pa-0">
       <v-col
         cols="6"
         class="ma-0 pa-0">
+	
+        <!-- tissue selection mode -->
+        <v-radio-group
+          v-model="tissue_sel_mode"
+          mandatory
+          row
+          class="pa-0 ma-0 pl-3 py-2"
+          hide-details
+          >
+	  Compare:
+          <v-radio
+            key="tsm-1"
+            :label="'Top ' + numTopTissues + ' tissues'"
+            value="top"
+            class="pa-0 ma-0 pl-2"
+            hide-details
+          />
+          <v-radio
+            key="tsm-2"
+            label="Specific tissue(s) only"
+            value="custom"
+            class="pa-0 ma-0 pl-4"
+            hide-details
+          />
+        </v-radio-group>
 
+	<v-text-field
+	  v-if="showSelected"
+	  v-model="tissueSearch"
+          append-icon="mdi-magnify"
+          label="Search"
+          single-line
+          hide-details
+	  class="ma-0 pa-0 ml-3 mb-1"
+	  ></v-text-field>
+	
         <!-- don't subset by sex -->
         <v-data-table
           v-if="!subset_by_sex"
           v-model="selected"
           :headers="headers"
-          :items="topTissues"
-          :items-per-page="numTopTissues"
+          :items="tableTissues"
+          :items-per-page="showSelected ? allTissues.length : numTopTissues"
           :height="height - vpad"
-          item-key="key"
+	  item-key="tissueSiteDetailId"
+	  :show-select="showSelected"
+	  :search="tissueSearch"
+          dense
+          hide-default-footer
+          >
+          <template v-slot:item.tissueSiteDetail="{ item }">
+            <td class="text-xs-left">
+              <v-chip
+                :color="'#' + item.colorHex"
+                label
+                small
+                class="mr-2">{{item.rank}}</v-chip>
+
+              <v-tooltip
+                top
+                color="primary">
+                <template v-slot:activator="{ on }">
+                  <span v-on="on">
+                    {{ item.tissueSiteDetail }}
+                  </span>
+                </template>
+                <span>{{ item.samplingSite }}</span>
+              </v-tooltip>
+            </td>
+          </template>
+        </v-data-table>
+
+        <!-- subset by sex -->
+        <v-data-table
+          v-else
+          v-model="selected"
+          :headers="headers_by_sex"
+          :items="tableTissues"
+	  :items-per-page="showSelected ? allTissues.length : numTopTissues"
+          :height="height - vpad"
+          item-key="tissueSiteDetailId"
+	  :show-select="showSelected"
+	  :search="tissueSearch"
           dense
           hide-default-footer
         >
+
+          <template v-slot:header="props" >
+            <thead>
+              <tr>
+                <th colspan="1"/>
+                <th colspan="2">female</th>
+                <th colspan="2">male</th>
+              </tr>
+            </thead>
+          </template>
+
           <template v-slot:item.tissueSiteDetail="{ item }">
             <td class="text-xs-left">
               <v-chip
@@ -80,41 +141,7 @@
             </td>
           </template>
         </v-data-table>
-
-        <!-- subset by sex -->
-
-        <template v-slot:header="props" >
-          <thead>
-            <tr>
-              <th colspan="1"/>
-              <th colspan="2">female</th>
-              <th colspan="2">male</th>
-            </tr>
-          </thead>
-        </template>
-
-        <template v-slot:item.tissueSiteDetail="{ item }">
-          <td class="text-xs-left">
-            <v-chip
-              :color="'#' + item.colorHex"
-              label
-              small
-              class="mr-2"/>
-
-            <v-tooltip
-              top
-              color="primary">
-              <template v-slot:activator="{ on }">
-                <span v-on="on">
-                  {{ item.tissueSiteDetail }}
-                </span>
-              </template>
-              <span>{{ item.samplingSite }}</span>
-            </v-tooltip>
-          </td>
-        </template>
       </v-col>
-
       <v-col
         cols="6"
         class="ma-0 pa-0">
@@ -124,7 +151,7 @@
 
           <v-container
             v-if="!hideControls"
-            class="pa-0 ma-0">
+            class="pa-0 ma-0 py-2">
             <v-row
               class="pa-0 ma-0"
               style="padding-left: 50px;">
@@ -183,7 +210,7 @@ var GTEX_VER_DESCR = 'GTEx v8'
 var GENCODE_VER = 'v26'
 var GENOME_VER = 'GRCh38/hg38'
 var PAGE_SIZE = 250
-var VPAD = 15
+var VPAD = 40
 var TITLE_HEIGHT = 40
 var CONTROLS_HEIGHT = 30
 
@@ -266,8 +293,10 @@ export default {
       tissue_info: null,
       uberon2tissues: null,
       detailId2tissue: null,
+      tissueSearch: '',
 
       // gene expression data
+      allExpressionData: null,
       expressionData: null,
       subset_by_sex: false,
       show_outliers: true,
@@ -275,6 +304,7 @@ export default {
 
       // table of tissues with the highest expression
       topTissues: [],
+      allTissues: [],
       selected: [],
       headers: [
         {
@@ -334,6 +364,12 @@ export default {
         vp += CONTROLS_HEIGHT
       }
       return vp
+    },
+    showSelected() {
+      return this.tissue_sel_mode == 'custom';
+    },
+    tableTissues() {
+      return this.showSelected ? this.allTissues : this.topTissues;
     }
   },
   watch: {
@@ -362,20 +398,28 @@ export default {
       this.detailId2tissue = dt
       if (this.sel_gencodeId) { this.getGeneExpressionData(this.sel_gencodeId) }
     },
-    expressionData (ed) {
+    expressionData () {
       this.displayExpressionData()
     },
-    subset_by_sex (ss) {
+    subset_by_sex () {
       this.clearExpressionData()
       this.getGeneExpressionData(this.sel_gencodeId)
     },
-    show_outliers (so) {
+    show_outliers () {
       this.clearExpressionData()
       this.getGeneExpressionData(this.sel_gencodeId)
     },
-    log_scale (so) {
+    log_scale () {
       this.clearExpressionData()
       this.getGeneExpressionData(this.sel_gencodeId)
+    },
+    selected () {
+      this.removeViolinPlot()
+      this.displayExpressionData()
+    },
+    tissue_sel_mode () {
+      this.removeViolinPlot()
+      this.displayExpressionData()
     }
   },
   mounted () {
@@ -398,9 +442,12 @@ export default {
       this.exons = null
       this.clearExpressionData()
     },
+    removeViolinPlot() {
+      $('#vplot_1-svg').remove()
+    },
     clearExpressionData () {
       this.expressionData = null
-      $('#vplot_1-svg').remove()
+      this.removeViolinPlot()
     },
     resetAll () {
       this.clearSelectedGene()
@@ -475,30 +522,47 @@ export default {
       tissueGroups.sort(function (a, b) { return b['median'] - a['median'] })
 
       let topTissues = []
+      let rank = 1
       tissueGroups.forEach(tg => {
         let ss1 = tg['subsets'][0]
         let t = self.detailId2tissue[ss1['tissueSiteDetailId']]
         let key = ss1['tissueSiteDetailId']
         let tt = { ...t,
           'tissueSiteDetailId': ss1['tissueSiteDetailId'],
+          'tissue': t,
           'median': tg['median'].toFixed(2),
           'median-male': tg['median-male'] ? tg['median-male'].toFixed(2) : 'N/A',
           'median-female': tg['median-female'] ? tg['median-female'].toFixed(2) : 'N/A',
           'count': tg['data'].length,
           'count-male': tg['count-male'],
           'count-female': tg['count-female'],
-          'key': key
+          'key': key,
+          'rank': rank++
         }
         topTissues.push(tt)
       })
 
       this.expressionData = tissueGroups.slice(0, this.numTopTissues)
-      this.topTissues = topTissues
+      this.allExpressionData = tissueGroups;
+      this.topTissues = topTissues.slice(0, this.numTopTissues)
+      this.allTissues = topTissues.sort(function (a,b) { return a.tissue.tissueSiteDetail.localeCompare(b.tissue.tissueSiteDetail); })
     },
     displayExpressionData () {
       if (this.expressionData == null || this.tissue_info == null) return
+      let expData = null;
+
+      if (this.showSelected) {
+        // filter expression data by selected tissues
+        if (this.selected.length == 0) return;
+        let selTissues = {};
+        this.selected.forEach(s => {selTissues[s['tissueSiteDetailId']] = 1;});
+        expData = this.allExpressionData.filter(d => d['tissueSiteDetailId'] in selTissues);
+      } else {
+        expData = this.expressionData;
+      }
+
       let self = this
-      let units = this.expressionData[0]['subsets'][0]['unit']
+      let units = expData[0]['subsets'][0]['unit']
       violinConfig.data = []
       violinConfig.showOutliers = this.show_outliers
       violinConfig.yLabel = self.log_scale ? 'log10(' + units + '+1)' : units
@@ -506,7 +570,7 @@ export default {
       violinConfig.width = this.width / 2
       violinConfig.height = this.height - this.vpad
 
-      this.expressionData.forEach(ed => {
+      expData.forEach(ed => {
         let t = self.detailId2tissue[ed['tissueSiteDetailId']]
         ed['subsets'].forEach(ss => {
           let data = self.log_scale ? ss['data'].map(d => Math.log10(+d + 1)) : ss['data']
