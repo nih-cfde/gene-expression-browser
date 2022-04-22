@@ -272,6 +272,16 @@ export default {
       type: Number,
       required: false,
       default: 0
+    },
+    uberonIds: {
+      type: String,
+      required: false,
+      default: null
+    },
+    tissueSiteDetailIds: {
+      type: String,
+      required: false,
+      default: null
     }
   },
   data () {
@@ -397,6 +407,9 @@ export default {
       this.uberon2tissues = ut
       this.detailId2tissue = dt
       if (this.sel_gencodeId) { this.getGeneExpressionData(this.sel_gencodeId) }
+      if ((this.uberonIds !== '') || (this.tissueSiteDetailIds !== '')) {
+        this.selectTissuesFromQuery()
+      }
     },
     expressionData () {
       this.displayExpressionData()
@@ -599,6 +612,7 @@ export default {
       })
       GTExViz.groupedViolinPlot(violinConfig)
     },
+    // return dark font color for light background and vice versa
     rankStyle (colorHex) {
       let res = colorHex.match(/^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i)
       let r = parseInt(res[1], 16)
@@ -609,6 +623,34 @@ export default {
         return 'color: black;'
       } else {
         return 'color: white;'
+      }
+    },
+    selectTissuesFromQuery () {
+      let selTissues = {}
+      let uids = this.uberonIds !== null ? this.uberonIds.split(',') : []
+      let tids = this.tissueSiteDetailIds !== null ? this.tissueSiteDetailIds.split(',') : []
+      // UBERON ids
+      uids.forEach(id => {
+        let ts = this.uberon2tissues[id]
+        ts.forEach(t => {
+          if (!(t['tissueSiteDetailId'] in selTissues)) {
+            selTissues[t['tissueSiteDetailId']] = t
+            this.selected.push(t)
+          }
+        })
+      })
+
+      tids.forEach(id => {
+        let t = this.detailId2tissue[id]
+        if (!(t['tissueSiteDetailId'] in selTissues)) {
+          selTissues[t['tissueSiteDetailId']] = t
+          this.selected.push(t)
+        }
+      })
+
+      // switch to display selected tissues only
+      if ((uids.length + tids.length) > 0) {
+        this.tissue_sel_mode = 'custom'
       }
     }
   }

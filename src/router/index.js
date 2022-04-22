@@ -55,7 +55,9 @@ export default new Router({
         height: +route.query.height,
         numTopTissues: +route.query.numTopTissues,
         hideTitle: +route.query.hideTitle,
-        hideControls: +route.query.hideControls
+        hideControls: +route.query.hideControls,
+        uberonIds: route.query.uberonIds,
+        tissueSiteDetailIds: route.query.tissueSiteDetailIds
       })
     },
     {
