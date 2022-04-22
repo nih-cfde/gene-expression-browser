@@ -68,7 +68,7 @@
           :items-per-page="showSelected ? allTissues.length : numTopTissues"
           :height="height - vpad"
           :show-select="showSelected"
-          :search="tissueSearch"
+          :search="showSelected ? tissueSearch : null"
           item-key="tissueSiteDetailId"
           dense
           hide-default-footer
@@ -104,7 +104,7 @@
           :items-per-page="showSelected ? allTissues.length : numTopTissues"
           :height="height - vpad"
           :show-select="showSelected"
-          :search="tissueSearch"
+          :search="showSelected ? tissueSearch : null"
           item-key="tissueSiteDetailId"
           dense
           hide-default-footer
@@ -402,7 +402,7 @@ export default {
       this.displayExpressionData()
     },
     subset_by_sex () {
-      this.getGeneExpressionData(this.sel_gencodeId)
+      this.displayExpressionData()
     },
     show_outliers () {
       this.displayExpressionData()
@@ -464,7 +464,8 @@ export default {
       axios.get(tissueUrl).then(function (r) { self.tissue_info = r.data.tissueInfo })
     },
     getGeneExpressionData (gencodeId) {
-      let subset = (this.subset_by_sex) ? 'sex' : null
+      // always request subsets and recombine later
+      let subset = 'sex'
       let self = this
       let expnUrl = GTEX_API + 'expression/geneExpression?gencodeId=' + gencodeId
       if (subset) expnUrl += '&attributeSubset=' + subset
@@ -568,6 +569,7 @@ export default {
 
       expData.forEach(ed => {
         let t = self.detailId2tissue[ed['tissueSiteDetailId']]
+        let subsetTissues = []
         ed['subsets'].forEach(ss => {
           let data = self.log_scale ? ss['data'].map(d => Math.log10(+d + 1)) : ss['data']
           let tissue = {
@@ -578,13 +580,22 @@ export default {
             'fill-opacity': '0.5'
           }
 
-          if ('subsetGroup' in ss) {
+          if (('subsetGroup' in ss) && (this.subset_by_sex)) {
             tissue['label'] = ss['subsetGroup']
             tissue['group'] = t['tissueSiteDetail']
             tissue['color'] = SUBSET_COLORS[ss['subsetGroup']]
           }
-          violinConfig.data.push(tissue)
+          subsetTissues.push(tissue)
         })
+        // recombine data if not subsetting
+        if (!this.subset_by_sex) {
+          let combinedData = []
+          subsetTissues.forEach(st => { if (st['values'] != null) { combinedData = combinedData.concat(st['values']) } })
+          subsetTissues[0]['values'] = combinedData
+          violinConfig.data.push(subsetTissues[0])
+        } else {
+          subsetTissues.forEach(st => violinConfig.data.push(st))
+        }
       })
       GTExViz.groupedViolinPlot(violinConfig)
     }

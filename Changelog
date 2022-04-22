@@ -1,6 +1,7 @@
 CFDE-20220430.1
  -Generalize GeneTopTissues iframe to allow user-selected tissues (#4)
  -Fix bug displaying sample counts (#7)
+ -Eliminate flickering of ViolinPlot when display preferences are changed (#2)
 
 CFDE-20220228.1 (Februar 28, 2022)
  -Knowledgebase/Markdown compatible iframes.
