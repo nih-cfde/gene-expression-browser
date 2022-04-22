@@ -600,7 +600,6 @@ export default {
       GTExViz.groupedViolinPlot(violinConfig)
     },
     rankStyle (colorHex) {
-      console.log('colorHex=' + colorHex)
       let res = colorHex.match(/^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i)
       let r = parseInt(res[1], 16)
       let g = parseInt(res[2], 16)
