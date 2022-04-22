@@ -53,7 +53,7 @@
           v-if="showSelected"
           v-model="tissueSearch"
           append-icon="mdi-magnify"
-          label="Search"
+          label="Search tissues"
           single-line
           hide-details
           class="ma-0 pa-0 ml-3 mb-1"
@@ -79,7 +79,7 @@
                 :color="'#' + item.colorHex"
                 label
                 small
-                class="mr-2">{{ item.rank }}</v-chip>
+                class="mr-2"><span :style="rankStyle(item.colorHex)">{{ item.rank }}</span></v-chip>
 
               <v-tooltip
                 top
@@ -598,6 +598,19 @@ export default {
         }
       })
       GTExViz.groupedViolinPlot(violinConfig)
+    },
+    rankStyle (colorHex) {
+      console.log('colorHex=' + colorHex)
+      let res = colorHex.match(/^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i)
+      let r = parseInt(res[1], 16)
+      let g = parseInt(res[2], 16)
+      let b = parseInt(res[3], 16)
+      let lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0
+      if (lum > 0.5) {
+        return 'color: black;'
+      } else {
+        return 'color: white;'
+      }
     }
   }
 }
