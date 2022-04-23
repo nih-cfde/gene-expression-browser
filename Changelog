@@ -1,5 +1,5 @@
 CFDE-20220430.1
- -Generalize GeneTopTissues iframe to allow user-selected tissues (#4)
+ -Added new GeneTissues iframe to allow user-selected tissues (#4)
  -Fix GeneTissues bug displaying sample counts (#7)
  -Eliminate flickering of ViolinPlot when display preferences are changed (#2)
  -Assign GeneTissues v-chip text color based on luminosity of background color (#1)
