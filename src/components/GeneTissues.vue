@@ -192,6 +192,27 @@
             id="vplot_1"
             :height="height - vpad"
             class="pa-0 ma-0"/>
+
+          <v-container
+            v-if="showSelected && (selected.length === 0)"
+            fluid
+            fill-width>
+            <v-row>
+              <v-col cols="12">
+                <div
+                  column
+                  align-center
+                  justify-center
+                  fill-width
+                  class="py-3 text-center">
+                  <span class="title text--secondary">
+                    No tissue(s) selected.
+                  </span>
+                </div>
+              </v-col>
+            </v-row>
+          </v-container>
+
         </div>
       </v-col>
     </v-row>
