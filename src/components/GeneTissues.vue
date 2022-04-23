@@ -29,7 +29,7 @@
           v-model="tissue_sel_mode"
           mandatory
           row
-          class="pa-0 ma-0 pl-3 py-2"
+          class="pa-0 ma-0 pl-3 pt-2 pb-2"
           hide-details
         >
           Compare:
@@ -66,7 +66,7 @@
           :headers="headers"
           :items="tableTissues"
           :items-per-page="showSelected ? allTissues.length : numTopTissues"
-          :height="height - vpad"
+          :height="height - tableVpad"
           :show-select="showSelected"
           :search="showSelected ? tissueSearch : null"
           item-key="tissueSiteDetailId"
@@ -102,7 +102,7 @@
           :headers="headers_by_sex"
           :items="tableTissues"
           :items-per-page="showSelected ? allTissues.length : numTopTissues"
-          :height="height - vpad"
+          :height="height - tableVpad"
           :show-select="showSelected"
           :search="showSelected ? tissueSearch : null"
           item-key="tissueSiteDetailId"
@@ -151,7 +151,7 @@
 
           <v-container
             v-if="!hideControls"
-            class="pa-0 ma-0 py-2">
+            class="pa-0 ma-0 pt-2 pb-4">
             <v-row
               class="pa-0 ma-0"
               style="padding-left: 50px;">
@@ -231,9 +231,11 @@ var GTEX_VER_DESCR = 'GTEx v8'
 var GENCODE_VER = 'v26'
 var GENOME_VER = 'GRCh38/hg38'
 var PAGE_SIZE = 250
-var VPAD = 40
+var VPAD = 25
+var TABLE_VPAD = 10
 var TITLE_HEIGHT = 40
 var CONTROLS_HEIGHT = 30
+var SEARCH_TISSUES_HEIGHT = 35
 
 var SUBSET_COLORS = {
   'male': '#aaeeff',
@@ -387,14 +389,11 @@ export default {
   computed: {
     // amount to subtract from externally-specified component height to avoid vertical scrolling
     vpad () {
-      let vp = VPAD
-      if (!this.hideTitle) {
-        vp += TITLE_HEIGHT
-      }
-      if (!this.hideControls) {
-        vp += CONTROLS_HEIGHT
-      }
-      return vp
+      return this.adjustVpad(VPAD)
+    },
+    tableVpad () {
+      let vp = this.adjustVpad(TABLE_VPAD)
+      return this.showSelected ? vp + SEARCH_TISSUES_HEIGHT : vp
     },
     showSelected () {
       return this.tissue_sel_mode === 'custom'
@@ -673,6 +672,16 @@ export default {
       if ((uids.length + tids.length) > 0) {
         this.tissue_sel_mode = 'custom'
       }
+    },
+    adjustVpad (vpad) {
+      let vp = vpad
+      if (!this.hideTitle) {
+        vp += TITLE_HEIGHT
+      }
+      if (!this.hideControls) {
+        vp += CONTROLS_HEIGHT
+      }
+      return vp
     }
   }
 }
