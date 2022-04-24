@@ -4,6 +4,7 @@ CFDE-20220430.1
  -Eliminate flickering of ViolinPlot when display preferences are changed (#2)
  -Assign GeneTissues v-chip text color based on luminosity of background color (#1)
  -Add parameters to GeneTissues: uberonIds, tissueDetailIds (#3)
+ -Added new Anatomy iframe with support for multi-gene, multi-tissue comparisons (#10)
 
 CFDE-20220228.1 (Februar 28, 2022)
  -Knowledgebase/Markdown compatible iframes.
