@@ -76,7 +76,7 @@
           <template v-slot:item.tissueSiteDetail="{ item }">
             <td class="text-xs-left">
               <v-chip
-                :color="'#' + item.colorHex"
+                :color="'rgba(' + item.colorRgb + ',0.5)'"
                 label
                 small
                 class="mr-2"><span :style="rankStyle(item.colorHex)">{{ item.rank }}</span></v-chip>
@@ -123,7 +123,7 @@
           <template v-slot:item.tissueSiteDetail="{ item }">
             <td class="text-xs-left">
               <v-chip
-                :color="'#' + item.colorHex"
+		:color="'rgba(' + item.colorRgb + ',0.5)'"
                 label
                 small
                 class="mr-2"/>
