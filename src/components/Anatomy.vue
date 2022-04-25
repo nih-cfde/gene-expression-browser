@@ -63,7 +63,7 @@
           <template v-slot:item.gene="{ item }">
             <td class="text-xs-left">
               <v-chip
-                :color="'#' + item.colorHex"
+		:color="'rgba(' + item.colorRgb + ',0.5)'"
                 label
                 small
                 class="mr-2 pa-1"><span :style="rankStyle(item.colorHex)">{{ item.rank }}</span>
@@ -317,6 +317,7 @@ export default {
         teg['description'] = g['description'].substring(0, g['description'].indexOf('['))
         teg['rank'] = rank++
         teg['colorHex'] = tissue['colorHex']
+        teg['colorRgb'] = tissue['colorRgb']
       })
       this.id2gene = id2gene
       this.genes = sortedGenes
