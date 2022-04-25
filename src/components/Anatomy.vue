@@ -124,12 +124,12 @@ var heatmapConfig = {
   marginLeft: 40,
   marginRight: 120,
   marginTop: 50,
-  marginBottom: 70,
+  marginBottom: 100,
   // values defined in GTExViz src/modules/colors.js
   colorScheme: 'YlGnBu',
-  cornerRadius: 1,
+  cornerRadius: 3,
   columnLabelHeight: 5,
-  columnLabelAngle: 45,
+  columnLabelAngle: 30,
   columnLabelPosAdjust: 10,
   rowLabelWidth: 12
 }
