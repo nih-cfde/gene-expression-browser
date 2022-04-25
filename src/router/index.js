@@ -26,7 +26,7 @@ export default new Router({
       name: 'Anatomy',
       component: () => import('@/components/Anatomy.vue'),
       props: route => ({
-        uberonId: route.query.uberon_id,
+        uberonIds: route.query.uberon_ids,
         width: +route.query.width,
         height: +route.query.height,
         numTopGenes: +route.query.numTopGenes

@@ -12,7 +12,7 @@
           <span class="font-weight-bold white--text"><img
             src="static/CFDE-icon-1.png"
             style="height: 2rem;"
-            class="pr-2">Gene expression data for {{ uberonId }} / {{ gtexTissue != null ? gtexTissue.tissueSiteDetail : '' }}</span>
+            class="pr-2">Gene expression data for {{ refUberonId }} / {{ gtexTissues != null ? gtexTissues[0].tissueSiteDetail : '' }}</span>
         </div>
       </v-col>
     </v-row>
@@ -33,7 +33,7 @@
           Show:
           <v-radio
             key="tsg-1"
-            :label="'Top ' + numTopGenes + ' genes' + (gtexTissue != null ? ' in ' + gtexTissue.tissueSiteDetail : '')"
+            :label="'Top ' + numTopGenes + ' genes' + (gtexTissues != null ? ' in ' + gtexTissues[0].tissueSiteDetail : '')"
             value="top"
             class="pa-0 ma-0 pl-2"
             hide-details
@@ -52,13 +52,26 @@
           v-if="!showSelectedGenes"
           v-model="selected"
           :headers="headers"
-          :items="genes"
+          :items="selectedGenes != null ? selectedGenes : []"
           :items-per-page="numTopGenes"
           :height="height - tableVpad"
           item-key="gencodeId"
           dense
           hide-default-footer
-        />
+        >
+
+          <template v-slot:item.gene="{ item }">
+            <td class="text-xs-left">
+              <v-chip
+                :color="'#' + item.colorHex"
+                label
+                small
+                class="mr-2 pa-1"><span :style="rankStyle(item.colorHex)">{{ item.rank }}</span>
+              </v-chip>{{ item.gene }}
+            </td>
+          </template>
+
+        </v-data-table>
 
         <div
           v-else
@@ -101,6 +114,7 @@ var TABLE_VPAD = 10
 var TITLE_HEIGHT = 40
 var CONTROLS_HEIGHT = 30
 var SEARCH_GENES_HEIGHT = 35
+var MAX_BAND_WIDTH = 50
 
 var heatmapConfig = {
   id: 'hmplot_1',
@@ -110,23 +124,23 @@ var heatmapConfig = {
   marginLeft: 40,
   marginRight: 120,
   marginTop: 50,
-  marginBottom: 80,
+  marginBottom: 70,
   // values defined in GTExViz src/modules/colors.js
   colorScheme: 'YlGnBu',
   cornerRadius: 1,
-  columnLabelHeight: 20,
+  columnLabelHeight: 5,
   columnLabelAngle: 45,
-  columnLabelPosAdjust: 15,
-  rowLabelWidth: 15
+  columnLabelPosAdjust: 10,
+  rowLabelWidth: 12
 }
 
 export default {
   name: 'Anatomy',
   props: {
-    uberonId: {
+    uberonIds: {
       type: String,
       required: true,
-      default: undefined
+      default: null
     },
     width: {
       type: Number,
@@ -153,15 +167,26 @@ export default {
       genomeVer: GENOME_VER,
       pageSize: PAGE_SIZE,
 
+      // uberon ids as an array
+      uberonIdList: null,
+
       // tissue info
       tissue_info: null,
       uberon2tissues: null,
       detailId2tissue: null,
 
-      // top-expressed genes
-      gtexTissue: null,
-      top_expressed_genes: [],
-      genes: [],
+      gtexTissues: null,
+      // top-expressed genes from expression/topExpressedGene
+      top_expressed_genes: null,
+      // gene info from reference/gene
+      genes: null,
+      id2gene: {},
+      // genes to display
+      selectedGenes: null,
+
+      // expression data for all tissues
+      expression_data: null,
+      tg2expression: null,
 
       // table of top-expressed genes
       selected: [],
@@ -184,13 +209,7 @@ export default {
       ],
 
       // gene selection mode
-      gene_sel_mode: 'top',
-
-      // selected gene
-      sel_gene_index: null,
-      sel_gencodeId: null,
-      sel_geneSymbol: null,
-      sel_gene: null
+      gene_sel_mode: 'top'
 
     }
   },
@@ -205,6 +224,9 @@ export default {
     },
     showSelectedGenes () {
       return this.gene_sel_mode === 'custom'
+    },
+    refUberonId () {
+      return this.uberonIdList != null ? this.uberonIdList[0] : null
     }
   },
   watch: {
@@ -224,39 +246,39 @@ export default {
       })
       this.uberon2tissues = ut
       this.detailId2tissue = dt
-      if (this.uberonId) {
+      if (this.uberonIds) {
+        let uids = this.uberonIds.split(',')
         let tissues = []
-        tissues = tissues.concat(this.uberon2tissues[this.uberonId])
-        this.gtexTissue = tissues[0]
+        uids.forEach(uid => {
+          tissues = tissues.concat(this.uberon2tissues[uid])
+          this.gtexTissues = tissues
+        })
+        this.uberonIdList = uids
       }
     },
-    gtexTissue (t) {
+    gtexTissues (ts) {
       // retrieve top-expressed numTopGenes genes
-      let tissueStr = '&tissueSiteDetailId=' + encodeURIComponent(t['tissueSiteDetailId'])
+      let tissueStr = '&tissueSiteDetailId=' + encodeURIComponent(ts[0]['tissueSiteDetailId'])
       let sortStr = '&sortBy=median&sortDirection=desc'
       let expnUrl = GTEX_API + 'expression/topExpressedGene?' + tissueStr + sortStr + this.gtexURLSuffix(GTEX_VER, this.numTopGenes, 'json')
       let self = this
-      axios.get(expnUrl).then(function (r) { self.top_expressed_genes = r.data.topExpressedGene })
+      axios.get(expnUrl).then(function (r) { self.setTopExpressedGenes(r.data.topExpressedGene) })
     },
     top_expressed_genes (teg) {
-      // retrieve detailed annotation for top-expressed genes
-      let genesUrl = GTEX_API + 'reference/gene?geneId=' + encodeURIComponent(teg.map(x => x.gencodeId).join(',')) + this.gtexURLSuffix(GTEX_VER, PAGE_SIZE, 'json')
       let self = this
+      // retrieve median TPM values for *all* requested tissues
+      let expnUrl = GTEX_API + 'expression/medianGeneExpression?' +
+        'gencodeId=' + encodeURIComponent(teg.map(x => x.gencodeId).join(',')) +
+          '&tissueSiteDetailId=' + encodeURIComponent(this.gtexTissues.map(x => x.tissueSiteDetailId).join(',')) +
+          this.gtexURLSuffix(GTEX_VER, PAGE_SIZE, 'json')
+      axios.get(expnUrl).then(function (r) { self.setExpressionData(r.data.medianGeneExpression) })
+
+      // retrieve detailed annotation for selected genes
+      let genesUrl = GTEX_API + 'reference/gene?geneId=' + encodeURIComponent(teg.map(x => x.gencodeId).join(',')) + this.gtexURLSuffix(GTEX_VER, PAGE_SIZE, 'json')
       axios.get(genesUrl).then(function (r) { self.setGenes(r.data.gene) })
     },
-    sel_gene_index (ind) {
-      if (ind != null) {
-        this.sel_gene = this.genes[ind]
-        this.sel_gencodeId = this.genes[ind].gencodeId
-        this.sel_geneSymbol = this.genes[ind].geneSymbol
-      }
-    },
-    selected (sel) {
-      if (sel.length > 0) {
-        this.sel_gene = sel[0]
-        this.sel_gencodeId = sel[0].gencodeId
-        this.sel_geneSymbol = sel[0].geneSymbol
-      }
+    expression_data () {
+      this.displayExpressionData()
     },
     genes () {
       this.displayExpressionData()
@@ -275,45 +297,69 @@ export default {
     },
     getTissueInfo (dataset) {
       let tissueUrl = GTEX_API + 'dataset/tissueInfo?datasetId=' + GTEX_VER + '&format=json'
-      let self = this;
+      let self = this
       axios.get(tissueUrl).then(function (r) { self.tissue_info = r.data.tissueInfo })
+    },
+    setTopExpressedGenes (teg) {
+      this.top_expressed_genes = teg
     },
     setGenes (gl) {
       // sort genes according to expression level
       let id2gene = {}
       gl.forEach(g => { id2gene[g.gencodeId] = g })
       let sortedGenes = []
-      let ind = 0
+      let rank = 1
+      let tissue = this.gtexTissues[0]
       this.top_expressed_genes.forEach(teg => {
         let g = id2gene[teg.gencodeId]
-        let fields = ['median', 'unit', 'tissueSiteDetailId']
-        fields.forEach(field => { g[field] = teg[field] })
-        g['gene'] = ++ind + '. ' + g['geneSymbolUpper']
-        let descr = g['description']
-        g['description'] = descr.substring(0, descr.indexOf('['))
         sortedGenes.push(g)
+        teg['gene'] = g['geneSymbolUpper']
+        teg['description'] = g['description'].substring(0, g['description'].indexOf('['))
+        teg['rank'] = rank++
+        teg['colorHex'] = tissue['colorHex']
       })
+      this.id2gene = id2gene
       this.genes = sortedGenes
-      this.selected = [sortedGenes[0]]
+      if (!this.showSelectedGenes) this.selectedGenes = this.top_expressed_genes
+    },
+    setExpressionData (ed) {
+      // index expression data by tissue and gencodeId
+      let tg2expression = {}
+      ed.forEach(d => {
+        let key = d.tissueSiteDetailId + ':' + d.gencodeId
+        tg2expression[key] = d
+      })
+      this.tg2expression = tg2expression
+      this.expression_data = ed
     },
     clearExpressionData () {
       $('#hmplot_1-svg').remove()
     },
     displayExpressionData () {
-      if (this.genes == null || this.tissue_info == null) return
-      //      let units = this.genes[0]['unit']
+      if (this.genes == null || this.tissue_info == null || this.tg2expression == null) return
       heatmapConfig.data = []
       heatmapConfig.width = Math.floor(this.width * (7 / 12.0))
       heatmapConfig.height = this.height - 60
+      // control max band width by increasing right margin
+      // TODO - account for space taken by the right hand side row labels
+      let hspace = heatmapConfig.width - (heatmapConfig.marginRight + heatmapConfig.marginLeft)
+      let extraHspace = hspace - (this.gtexTissues.length * MAX_BAND_WIDTH)
+      heatmapConfig.marginRight = 120 + ((extraHspace > 0) ? extraHspace : 0)
 
-      this.genes.forEach(g => {
-        let gd = {
-          'x': g['tissueSiteDetailId'],
-          'y': g['geneSymbol'],
-          'value': g['median'],
-          'displayValue': g['median']
-        }
-        heatmapConfig.data.push(gd)
+      // loop over genes and tissues
+      this.selectedGenes.forEach(g => {
+        this.gtexTissues.forEach(gt => {
+          let key = gt.tissueSiteDetailId + ':' + g.gencodeId
+          let ed = this.tg2expression[key]
+          let gd = {
+            'x': gt['tissueSiteDetailId'],
+            'y': g['rank'] + '. ' + g['geneSymbol'],
+            'value': ed['median'],
+            'displayValue': ed['median'],
+            'unit': ed['unit']
+          }
+          heatmapConfig.data.push(gd)
+        })
       })
 
       GTExViz.heatmap(heatmapConfig)
@@ -327,6 +373,19 @@ export default {
         vp += CONTROLS_HEIGHT
       }
       return vp
+    },
+    // return dark font color for light background and vice versa
+    rankStyle (colorHex) {
+      let res = colorHex.match(/^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i)
+      let r = parseInt(res[1], 16)
+      let g = parseInt(res[2], 16)
+      let b = parseInt(res[3], 16)
+      let lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0
+      if (lum > 0.5) {
+        return 'color: black;'
+      } else {
+        return 'color: white;'
+      }
     }
   }
 }
