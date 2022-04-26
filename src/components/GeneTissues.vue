@@ -123,7 +123,7 @@
           <template v-slot:item.tissueSiteDetail="{ item }">
             <td class="text-xs-left">
               <v-chip
-		:color="'rgba(' + item.colorRgb + ',0.5)'"
+                :color="'rgba(' + item.colorRgb + ',0.5)'"
                 label
                 small
                 class="mr-2"/>
