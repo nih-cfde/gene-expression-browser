@@ -60,15 +60,28 @@
           hide-default-footer
         >
 
-          <template v-slot:item.gene="{ item }">
-            <td class="text-xs-left">
-              <v-chip
-		:color="'rgba(' + item.colorRgb + ',0.5)'"
-                label
-                small
-                class="mr-2 pa-1"><span :style="rankStyle(item.colorHex)">{{ item.rank }}</span>
-              </v-chip>{{ item.gene }}
-            </td>
+          <template v-slot:item="{ item }">
+            <tr>
+              <td
+                class="text-xs-left"
+                style="white-space: nowrap;">
+                <v-chip
+                  :color="'rgba(' + item.colorRgb + ',0.5)'"
+                  label
+                  small
+                  class="mr-2 pa-1"><span :style="rankStyle(item.colorHex)">{{ item.rank }}</span>
+                </v-chip>{{ item.gene }}
+              </td>
+
+              <td class="text-xs-left">{{ item.median }}</td>
+
+              <td
+                class="text-xs-left"
+                style="max-width: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+              >
+                {{ item.description }}
+              </td>
+            </tr>
           </template>
 
         </v-data-table>
@@ -194,16 +207,19 @@ export default {
         {
           text: 'gene',
           value: 'gene',
+          width: '15%',
           sortable: false
         },
         {
           text: 'median TPM',
           value: 'median',
+          width: '20%',
           sortable: false
         },
         {
           text: 'description',
           value: 'description',
+          width: '65%',
           sortable: false
         }
       ],
