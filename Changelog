@@ -7,6 +7,7 @@ CFDE-20220430.1
  -Added new Anatomy iframe with support for multi-gene, multi-tissue comparisons (#10)
  -Adjusted tissue/anatomy colors in data table to match those in ViolinPlot (#13)
  -Auto-truncate long gene descriptions (#11)
+ -Add option to toggle inclusion of mitochondrial genes (#12)
 
 CFDE-20220228.1 (February 28, 2022)
  -Knowledgebase/Markdown compatible iframes.

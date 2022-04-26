@@ -4,7 +4,9 @@
     fill-width
     class="ma-0 pa-0">
 
-    <v-row class="ma-0 pa-0">
+    <v-row
+      v-if="!hideTitle"
+      class="ma-0 pa-0">
       <v-col
         cols="12"
         class="ma-0 pa-0">
@@ -17,17 +19,15 @@
       </v-col>
     </v-row>
 
-    <v-row class="ma-0 pa-0">
-      <v-col
-        cols="5"
-        class="ma-0 pa-0">
+    <v-row class="ma-0 py-2">
+      <v-col class="ma-0 pa-0">
 
         <!-- gene selection mode -->
         <v-radio-group
           v-model="gene_sel_mode"
           mandatory
           row
-          class="pa-0 ma-0 pl-3 pt-2 pb-2"
+          class="pa-0 ma-0 pl-3"
           hide-details
         >
           Show:
@@ -46,6 +46,24 @@
             hide-details
           />
         </v-radio-group>
+      </v-col>
+
+      <v-col class="ma-0 pa-0">
+        <!-- display options -->
+        <v-switch
+          v-model="include_mito_genes"
+          :disabled="showSelectedGenes"
+          label="Include mitochondrial genes"
+          class="pa-0 ma-0"
+          dense
+          hide-details/>
+      </v-col>
+    </v-row>
+
+    <v-row class="ma-0 pa-0">
+      <v-col
+        cols="5"
+        class="ma-0 pa-0">
 
         <!-- show top N genes -->
         <v-data-table
@@ -122,14 +140,13 @@ var GTEX_VER_DESCR = 'GTEx v8'
 var GENCODE_VER = 'v26'
 var GENOME_VER = 'GRCh38/hg38'
 var PAGE_SIZE = 50
-var VPAD = 25
-var TABLE_VPAD = 10
+var VPAD = 40
+var TABLE_VPAD = 40
 var TITLE_HEIGHT = 40
-var CONTROLS_HEIGHT = 30
 var SEARCH_GENES_HEIGHT = 35
 var MAX_BAND_WIDTH = 50
 
-var heatmapConfig = {
+var HEATMAP_CONFIG = {
   id: 'hmplot_1',
   data: null,
   width: 800,
@@ -169,6 +186,11 @@ export default {
       type: Number,
       required: false,
       default: 10
+    },
+    hideTitle: {
+      type: Number,
+      required: false,
+      default: 0
     }
   },
   data () {
@@ -225,7 +247,10 @@ export default {
       ],
 
       // gene selection mode
-      gene_sel_mode: 'top'
+      gene_sel_mode: 'top',
+
+      // include mitochrondrial genes
+      include_mito_genes: true
 
     }
   },
@@ -273,10 +298,13 @@ export default {
       }
     },
     gtexTissues (ts) {
+      if (ts == null) return
       // retrieve top-expressed numTopGenes genes
       let tissueStr = '&tissueSiteDetailId=' + encodeURIComponent(ts[0]['tissueSiteDetailId'])
       let sortStr = '&sortBy=median&sortDirection=desc'
-      let expnUrl = GTEX_API + 'expression/topExpressedGene?' + tissueStr + sortStr + this.gtexURLSuffix(GTEX_VER, this.numTopGenes, 'json')
+      // workaround for bug in GTEx API, which filters if 'filterMtGene=false'
+      let mitoStr = this.include_mito_genes ? '' : '&filterMtGene=true'
+      let expnUrl = GTEX_API + 'expression/topExpressedGene?' + tissueStr + sortStr + mitoStr + this.gtexURLSuffix(GTEX_VER, this.numTopGenes, 'json')
       let self = this
       axios.get(expnUrl).then(function (r) { self.setTopExpressedGenes(r.data.topExpressedGene) })
     },
@@ -298,6 +326,13 @@ export default {
     },
     genes () {
       this.displayExpressionData()
+    },
+    include_mito_genes (inc) {
+      // trigger reload
+      this.genes = null
+      this.tg2expression = null
+      let gt = this.gtexTissues.slice()
+      this.gtexTissues = gt
     }
   },
   mounted () {
@@ -354,9 +389,11 @@ export default {
     },
     displayExpressionData () {
       if (this.genes == null || this.tissue_info == null || this.tg2expression == null) return
+      this.clearExpressionData()
+      let heatmapConfig = {...HEATMAP_CONFIG}
       heatmapConfig.data = []
       heatmapConfig.width = Math.floor(this.width * (7 / 12.0))
-      heatmapConfig.height = this.height - 60
+      heatmapConfig.height = this.height - this.vpad
       // control max band width by increasing right margin
       // TODO - account for space taken by the right hand side row labels
       let hspace = heatmapConfig.width - (heatmapConfig.marginRight + heatmapConfig.marginLeft)
@@ -385,9 +422,6 @@ export default {
       let vp = vpad
       if (!this.hideTitle) {
         vp += TITLE_HEIGHT
-      }
-      if (!this.hideControls) {
-        vp += CONTROLS_HEIGHT
       }
       return vp
     },
