@@ -467,7 +467,7 @@ export default {
             'x': gt['tissueSiteDetailId'],
             'y': lbl,
             'value': ed['median'],
-            'displayValue': ed['median'],
+            'displayValue': ed['median'].toFixed(2),
             'unit': ed['unit']
           }
           heatmapConfig.data.push(gd)
