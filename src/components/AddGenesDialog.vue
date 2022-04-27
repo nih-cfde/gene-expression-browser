@@ -2,23 +2,25 @@
   <v-dialog
     v-model="openDialog"
     max-width="50%"
-    height="90%">
+    scrollable>
     <template v-slot:activator="{ on, attrs }">
       <v-btn
         v-bind="attrs"
         small
         color="primary"
         class="ml-4"
-        v-on="on">Add Gene(s)</v-btn>
+        v-on="on"><v-icon>mdi-plus</v-icon>Add Gene(s)</v-btn>
     </template>
-    <v-card class="white">
+    <v-card
+      class="white"
+      height="90vh">
       <v-card-title class="text-h5 primary">
         <span class="text-white">Add gene(s)</span>
         <v-spacer />
         <v-btn
           icon
           class="white"
-          @click="openDialog = false" >
+          @click="closeDialog()" >
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
@@ -67,7 +69,7 @@
               class="pa-0 ma-0">
 
               <v-container class="pa-0 ma-0">
-                <v-row class="pa-0 ma-0">
+                <v-row class="pa-0 ma-0 pt-2">
                   <v-col
                     cols="10"
                     class="pa-0 ma-0">
@@ -94,9 +96,28 @@
 
                 <v-row class="ma-0 pa-0">
                   <v-col
+                    cols="8"
+                    class="ma-0 pa-0">
+                    <span class="pl-1">{{ gene_ss_results.length }} gene(s) found:</span>
+                    <v-spacer/>
+                  </v-col>
+                  <v-col
+                    cols="4"
+                    class="ma-0 pa-0 text-right">
+                    <v-btn
+                      small
+		      :disabled="gene_ss_results.length === 0"
+                      class="primary"
+                      @click="addAllGenes()">
+                      <v-icon>mdi-plus</v-icon>Add all {{ gene_ss_results.length ? gene_ss_results.length : ''}}
+                    </v-btn>
+                  </v-col>
+                </v-row>
+
+                <v-row class="ma-0 pa-0">
+                  <v-col
                     cols="12"
                     class="ma-0 pa-0">
-                    Search results ({{ gene_ss_results.length }}):
                     <v-list>
                       <v-list-item
                         v-for="(item, i) in gene_ss_results"
@@ -158,7 +179,7 @@
 
                         <v-list-item-action>
                           <v-btn
-                            :disabled="item.gencodeId in selectedGenes"
+                            :disabled="isGeneSelected(item)"
                             small
                             class="primary"
                             @click="addGene(item)">
@@ -180,7 +201,7 @@
             class="ma-0 pa-0">
             <v-col
               cols="12"
-              class="ma-0 pa-0">
+              class="ma-0 pa-0 pt-2">
 
               Manually enter list of gene ids - not yet supported
 
@@ -216,8 +237,7 @@ export default {
     },
     selectedGenes: {
       type: Object,
-      required: false,
-      default: () => {}
+      required: true
     }
   },
   data () {
@@ -260,6 +280,19 @@ export default {
     },
     addGene (g) {
       this.$emit('add_gene', g)
+    },
+    addAllGenes (g) {
+      let self = this
+      this.gene_ss_results.forEach(g => {
+        self.$emit('add_gene', g)
+      })
+    },
+    isGeneSelected (g) {
+      return (g.gencodeId in this.selectedGenes)
+    },
+    closeDialog () {
+      this.$emit('dialog_closed')
+      this.openDialog = false
     }
   }
 }

@@ -14,7 +14,7 @@
           <span class="font-weight-bold white--text"><img
             src="static/CFDE-icon-1.png"
             style="height: 2rem;"
-            class="pr-2">Gene expression data for {{ refUberonId }} / {{ gtexTissues != null ? gtexTissues[0].tissueSiteDetail : '' }}</span>
+            class="pr-2">{{ gtexVerDescr }} expression data for {{ refUberonId }} / {{ gtexTissues != null ? gtexTissues[0].tissueSiteDetail : '' }}</span>
         </div>
       </v-col>
     </v-row>
@@ -65,14 +65,23 @@
         cols="5"
         class="ma-0 pa-0">
 
-        <add-genes-dialog
+        <div
           v-if="showSelectedGenes"
-          :gtex-api="gtexAPI"
-          :gtex-ver="gtexVer"
-          :page-size="pageSize"
-          :selected-genes="selected_genes_d"
-          @add_gene="addGene"
-        />
+          class="pb-2">
+          <add-genes-dialog
+            :gtex-api="gtexAPI"
+            :gtex-ver="gtexVer"
+            :page-size="pageSize"
+            :selected-genes="selected_genes_d"
+            @add_gene="addGene"
+            @dialog_closed="addGenesDialogClosed"
+          />
+          <v-btn
+            small
+            color="primary"
+            class="ml-1"
+            @click="removeAllGenes"><v-icon>mdi-minus</v-icon>Remove all</v-btn>
+        </div>
 
         <!-- show top N genes -->
         <v-data-table
@@ -100,7 +109,7 @@
                 </v-chip>{{ item.gene }}
               </td>
 
-              <td class="text-xs-left">{{ item.median }}</td>
+              <td class="text-xs-left">{{ getGeneExpInRef(item) }}</td>
 
               <td
                 class="text-xs-left"
@@ -241,7 +250,6 @@ export default {
       topGenes: null,
 
       // expression data for all tissues
-      expression_data: null,
       tg2expression: null,
 
       // table of top-expressed genes
@@ -341,17 +349,14 @@ export default {
     top_expressed_genes (teg) {
       let self = this
       // retrieve median TPM values for *all* requested tissues
-      let expnUrl = GTEX_API + 'expression/medianGeneExpression?' +
-        'gencodeId=' + encodeURIComponent(teg.map(x => x.gencodeId).join(',')) +
-          '&tissueSiteDetailId=' + encodeURIComponent(this.gtexTissues.map(x => x.tissueSiteDetailId).join(',')) +
-          this.gtexURLSuffix(GTEX_VER, PAGE_SIZE, 'json')
-      axios.get(expnUrl).then(function (r) { self.setExpressionData(r.data.medianGeneExpression) })
+      let expnUrl = this.medianExpressionURL(teg, this.gtexTissues)
+      axios.get(expnUrl).then(function (r) { self.addExpressionData(r.data.medianGeneExpression) })
 
       // retrieve detailed annotation for selected genes
       let genesUrl = GTEX_API + 'reference/gene?geneId=' + encodeURIComponent(teg.map(x => x.gencodeId).join(',')) + this.gtexURLSuffix(GTEX_VER, PAGE_SIZE, 'json')
       axios.get(genesUrl).then(function (r) { self.setGenes(r.data.gene) })
     },
-    expression_data () {
+    tg2expression () {
       this.displayExpressionData()
     },
     genes () {
@@ -360,7 +365,6 @@ export default {
     include_mito_genes (inc) {
       // trigger reload
       this.genes = null
-      this.tg2expression = null
       let gt = this.gtexTissues.slice()
       this.gtexTissues = gt
     },
@@ -379,8 +383,24 @@ export default {
       if (format) suffix += '&format=' + format
       return suffix
     },
+    medianExpressionURL (genes, tissues) {
+      let expnUrl = GTEX_API + 'expression/medianGeneExpression?' +
+        'gencodeId=' + encodeURIComponent(genes.map(x => x.gencodeId).join(',')) +
+          '&tissueSiteDetailId=' + encodeURIComponent(tissues.map(x => x.tissueSiteDetailId).join(',')) +
+          this.gtexURLSuffix(GTEX_VER, PAGE_SIZE, 'json')
+      return expnUrl
+    },
     getGeneDescr (g) {
+      if ((g.description === null) || (g.description === '')) return '-'
       return g.description.substring(0, g.description.indexOf('['))
+    },
+    getGeneExpInRef (g) {
+      let key = this.gtexTissues[0].tissueSiteDetailId + ':' + g.gencodeId
+      if ((this.tg2expression != null) && (key in this.tg2expression)) {
+        let ev = this.tg2expression[key].median
+        return ev.toFixed(2)
+      }
+      return '-'
     },
     getTissueInfo (dataset) {
       let tissueUrl = GTEX_API + 'dataset/tissueInfo?datasetId=' + GTEX_VER + '&format=json'
@@ -410,15 +430,14 @@ export default {
       this.genes = sortedGenes
       if (!this.showSelectedGenes) this.topGenes = this.top_expressed_genes
     },
-    setExpressionData (ed) {
+    addExpressionData (ed) {
       // index expression data by tissue and gencodeId
-      let tg2expression = {}
+      let tg2expression = {...this.tg2expression}
       ed.forEach(d => {
         let key = d.tissueSiteDetailId + ':' + d.gencodeId
         tg2expression[key] = d
       })
       this.tg2expression = tg2expression
-      this.expression_data = ed
     },
     clearExpressionData () {
       $('#hmplot_1-svg').remove()
@@ -442,9 +461,11 @@ export default {
         this.gtexTissues.forEach(gt => {
           let key = gt.tissueSiteDetailId + ':' + g.gencodeId
           let ed = this.tg2expression[key]
+          let lbl = ('rank' in g) ? g['rank'] + '. ' : ''
+          lbl = lbl + g['geneSymbol']
           let gd = {
             'x': gt['tissueSiteDetailId'],
-            'y': g['rank'] + '. ' + g['geneSymbol'],
+            'y': lbl,
             'value': ed['median'],
             'displayValue': ed['median'],
             'unit': ed['unit']
@@ -476,12 +497,24 @@ export default {
       }
     },
     addGene (g) {
-      console.log('adding gene ' + g.gencodeId)
-      // TODO - temporary
+      if (g.gencodeId in this.selected_genes_d) return
       g.gene = g.geneSymbolUpper
-      g.median = 0
+      g.median = null
       this.selected_genes.push(g)
-      this.selected_genes_d[g.gencodeId] = 1
+      // force update
+      let selG = {...this.selected_genes_d}
+      selG[g.gencodeId] = 1
+      this.selected_genes_d = selG
+    },
+    removeAllGenes () {
+      this.selected_genes = []
+      this.selected_genes_d = {}
+      this.displayExpressionData()
+    },
+    addGenesDialogClosed () {
+      let self = this
+      let expnUrl = this.medianExpressionURL(this.selected_genes, this.gtexTissues)
+      axios.get(expnUrl).then(function (r) { self.addExpressionData(r.data.medianGeneExpression) })
     }
   }
 }
