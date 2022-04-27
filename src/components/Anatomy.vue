@@ -65,12 +65,20 @@
         cols="5"
         class="ma-0 pa-0">
 
+        <add-genes-dialog
+          v-if="showSelectedGenes"
+          :gtex-api="gtexAPI"
+          :gtex-ver="gtexVer"
+          :page-size="pageSize"
+          :selected-genes="selected_genes_d"
+          @add_gene="addGene"
+        />
+
         <!-- show top N genes -->
         <v-data-table
-          v-if="!showSelectedGenes"
           v-model="selected"
           :headers="headers"
-          :items="selectedGenes != null ? selectedGenes : []"
+          :items="tableGenes"
           :items-per-page="numTopGenes"
           :height="height - tableVpad"
           item-key="gencodeId"
@@ -84,6 +92,7 @@
                 class="text-xs-left"
                 style="white-space: nowrap;">
                 <v-chip
+                  v-if="!showSelectedGenes"
                   :color="'rgba(' + item.colorRgb + ',0.5)'"
                   label
                   small
@@ -97,31 +106,39 @@
                 class="text-xs-left"
                 style="max-width: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
               >
-                {{ item.description }}
+                {{ getGeneDescr(item) }}
               </td>
             </tr>
           </template>
 
         </v-data-table>
-
-        <div
-          v-else
-          column
-          align-center
-          justify-center
-          fill-width
-          class="py-3 text-center">
-          <span class="title text--secondary">
-            Not yet implemented.
-          </span>
-        </div>
-
       </v-col>
 
       <v-col
         cols="7"
         class="ma-0 pa-0">
         <div id="hmplot_1"/>
+
+        <v-container
+          v-if="showSelectedGenes && (tableGenes.length === 0)"
+          fluid
+          fill-width>
+          <v-row>
+            <v-col cols="12">
+              <div
+                column
+                align-center
+                justify-center
+                fill-width
+                class="py-3 text-center">
+                <span class="title text--secondary">
+                  No gene(s) selected.
+                </span>
+              </div>
+            </v-col>
+          </v-row>
+        </v-container>
+
       </v-col>
     </v-row>
 
@@ -133,6 +150,7 @@
 /* global GTExViz */
 
 import axios from 'axios'
+import AddGenesDialog from '@/components/AddGenesDialog.vue'
 
 var GTEX_API = 'https://gtexportal.org/rest/v1/'
 var GTEX_VER = 'gtex_v8'
@@ -166,6 +184,9 @@ var HEATMAP_CONFIG = {
 
 export default {
   name: 'Anatomy',
+  components: {
+    AddGenesDialog
+  },
   props: {
     uberonIds: {
       type: String,
@@ -217,7 +238,7 @@ export default {
       genes: null,
       id2gene: {},
       // genes to display
-      selectedGenes: null,
+      topGenes: null,
 
       // expression data for all tissues
       expression_data: null,
@@ -250,8 +271,11 @@ export default {
       gene_sel_mode: 'top',
 
       // include mitochrondrial genes
-      include_mito_genes: true
+      include_mito_genes: true,
 
+      // user-selected genes
+      selected_genes: [],
+      selected_genes_d: {}
     }
   },
   computed: {
@@ -268,6 +292,12 @@ export default {
     },
     refUberonId () {
       return this.uberonIdList != null ? this.uberonIdList[0] : null
+    },
+    tableGenes () {
+      if (this.showSelectedGenes) {
+        return this.selected_genes
+      }
+      return this.topGenes != null ? this.topGenes : []
     }
   },
   watch: {
@@ -333,6 +363,9 @@ export default {
       this.tg2expression = null
       let gt = this.gtexTissues.slice()
       this.gtexTissues = gt
+    },
+    gene_sel_mode () {
+      this.displayExpressionData()
     }
   },
   mounted () {
@@ -345,6 +378,9 @@ export default {
       if (pageSize) suffix += '&pageSize=' + pageSize
       if (format) suffix += '&format=' + format
       return suffix
+    },
+    getGeneDescr (g) {
+      return g.description.substring(0, g.description.indexOf('['))
     },
     getTissueInfo (dataset) {
       let tissueUrl = GTEX_API + 'dataset/tissueInfo?datasetId=' + GTEX_VER + '&format=json'
@@ -365,14 +401,14 @@ export default {
         let g = id2gene[teg.gencodeId]
         sortedGenes.push(g)
         teg['gene'] = g['geneSymbolUpper']
-        teg['description'] = g['description'].substring(0, g['description'].indexOf('['))
+        teg['description'] = g['description']
         teg['rank'] = rank++
         teg['colorHex'] = tissue['colorHex']
         teg['colorRgb'] = tissue['colorRgb']
       })
       this.id2gene = id2gene
       this.genes = sortedGenes
-      if (!this.showSelectedGenes) this.selectedGenes = this.top_expressed_genes
+      if (!this.showSelectedGenes) this.topGenes = this.top_expressed_genes
     },
     setExpressionData (ed) {
       // index expression data by tissue and gencodeId
@@ -390,6 +426,7 @@ export default {
     displayExpressionData () {
       if (this.genes == null || this.tissue_info == null || this.tg2expression == null) return
       this.clearExpressionData()
+      if (this.tableGenes.length === 0) return
       let heatmapConfig = {...HEATMAP_CONFIG}
       heatmapConfig.data = []
       heatmapConfig.width = Math.floor(this.width * (7 / 12.0))
@@ -401,7 +438,7 @@ export default {
       heatmapConfig.marginRight = 120 + ((extraHspace > 0) ? extraHspace : 0)
 
       // loop over genes and tissues
-      this.selectedGenes.forEach(g => {
+      this.tableGenes.forEach(g => {
         this.gtexTissues.forEach(gt => {
           let key = gt.tissueSiteDetailId + ':' + g.gencodeId
           let ed = this.tg2expression[key]
@@ -437,6 +474,14 @@ export default {
       } else {
         return 'color: white;'
       }
+    },
+    addGene (g) {
+      console.log('adding gene ' + g.gencodeId)
+      // TODO - temporary
+      g.gene = g.geneSymbolUpper
+      g.median = 0
+      this.selected_genes.push(g)
+      this.selected_genes_d[g.gencodeId] = 1
     }
   }
 }
