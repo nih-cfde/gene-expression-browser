@@ -81,7 +81,9 @@
             small
             color="primary"
             class="ml-1"
-            @click="removeAllGenes"><v-icon>mdi-minus</v-icon>Remove all</v-btn>
+            @click="removeAllGenes"><v-icon
+              small
+              class="pr-1">mdi-delete</v-icon>Remove all</v-btn>
         </div>
 
         <!-- show top N genes -->
@@ -103,10 +105,10 @@
                 style="white-space: nowrap;">
                 <v-chip
                   v-if="item.gencodeId in top_expressed_genes_d"
-                  :color="'rgba(' + top_expressed_genes_d[item.gencodeId].colorRgb + ',0.5)'"
+                  :color="getGeneTissueColor(item)"
                   label
                   small
-                  class="mr-2 pa-1"><span :style="rankStyle(top_expressed_genes_d[item.gencodeId].colorHex)">{{ top_expressed_genes_d[item.gencodeId].rank }}</span>
+                  class="mr-2 pa-1"><span :style="getGeneRankStyle(item)">{{ top_expressed_genes_d[item.gencodeId].rank }}</span>
                 </v-chip>{{ item.gene }}
               </td>
 
@@ -117,6 +119,11 @@
                 style="max-width: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
               >
                 {{ getGeneDescr(item) }}
+              </td>
+              <td>
+                <v-icon
+                  v-if="showSelectedGenes"
+                  @click="removeGene(item)">mdi-delete</v-icon>
               </td>
             </tr>
           </template>
@@ -167,7 +174,7 @@ var GTEX_VER = 'gtex_v8'
 var GTEX_VER_DESCR = 'GTEx v8'
 var GENCODE_VER = 'v26'
 var GENOME_VER = 'GRCh38/hg38'
-var PAGE_SIZE = 50
+var PAGE_SIZE = 100
 var VPAD = 40
 var TABLE_VPAD = 40
 var TITLE_HEIGHT = 40
@@ -272,7 +279,13 @@ export default {
         {
           text: 'description',
           value: 'description',
-          width: '65%',
+          width: '60%',
+          sortable: false
+        },
+        {
+          text: '',
+          value: '',
+          width: '5%',
           sortable: false
         }
       ],
@@ -404,6 +417,29 @@ export default {
       }
       return '-'
     },
+    getGeneTissueColor (gene) {
+      let gid = gene.gencodeId
+      let teg = this.top_expressed_genes_d[gid]
+      if ((teg === null) || !teg.colorRgb) return 'rgb(255,255,255)'
+      return 'rgba(' + teg.colorRgb + ',0.5)'
+    },
+    // return dark font color for light background and vice versa
+    getGeneRankStyle (gene) {
+      let gid = gene.gencodeId
+      let teg = this.top_expressed_genes_d[gid]
+      if ((teg === null) || !teg.colorHex) return 'color: black;'
+      let colorHex = teg.colorHex
+      let res = colorHex.match(/^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i)
+      let r = parseInt(res[1], 16)
+      let g = parseInt(res[2], 16)
+      let b = parseInt(res[3], 16)
+      let lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0
+      if (lum > 0.5) {
+        return 'color: black;'
+      } else {
+        return 'color: white;'
+      }
+    },
     getTissueInfo (dataset) {
       let tissueUrl = GTEX_API + 'dataset/tissueInfo?datasetId=' + GTEX_VER + '&format=json'
       let self = this
@@ -466,17 +502,19 @@ export default {
       this.tableGenes.forEach(g => {
         this.gtexTissues.forEach(gt => {
           let key = gt.tissueSiteDetailId + ':' + g.gencodeId
-          let ed = this.tg2expression[key]
           let lbl = ('rank' in g) ? g['rank'] + '. ' : ''
           lbl = lbl + g['geneSymbol']
-          let gd = {
-            'x': gt['tissueSiteDetailId'],
-            'y': lbl,
-            'value': ed['median'],
-            'displayValue': ed['median'].toFixed(2),
-            'unit': ed['unit']
+          let ed = this.tg2expression[key]
+          if (ed != null) {
+            let gd = {
+              'x': gt['tissueSiteDetailId'],
+              'y': lbl,
+              'value': ed['median'],
+              'displayValue': ed['median'].toFixed(2),
+              'unit': ed['unit']
+            }
+            heatmapConfig.data.push(gd)
           }
-          heatmapConfig.data.push(gd)
         })
       })
 
@@ -489,19 +527,6 @@ export default {
       }
       return vp
     },
-    // return dark font color for light background and vice versa
-    rankStyle (colorHex) {
-      let res = colorHex.match(/^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i)
-      let r = parseInt(res[1], 16)
-      let g = parseInt(res[2], 16)
-      let b = parseInt(res[3], 16)
-      let lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0
-      if (lum > 0.5) {
-        return 'color: black;'
-      } else {
-        return 'color: white;'
-      }
-    },
     addGene (g) {
       if (g.gencodeId in this.selected_genes_d) return
       g.gene = g.geneSymbolUpper
@@ -511,6 +536,13 @@ export default {
       let selG = {...this.selected_genes_d}
       selG[g.gencodeId] = 1
       this.selected_genes_d = selG
+    },
+    removeGene (g) {
+      if (!(g.gencodeId in this.selected_genes_d)) return
+      delete this.selected_genes_d[g.gencodeId]
+      let nsg = this.selected_genes.filter(sg => sg.gencodeId !== g.gencodeId)
+      this.selected_genes = nsg
+      this.displayExpressionData()
     },
     removeAllGenes () {
       this.selected_genes = []

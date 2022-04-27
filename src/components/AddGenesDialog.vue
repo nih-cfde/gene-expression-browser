@@ -9,7 +9,9 @@
         small
         color="primary"
         class="ml-4"
-        v-on="on"><v-icon>mdi-plus</v-icon>Add Gene(s)</v-btn>
+        v-on="on"><v-icon
+          small
+          class="pr-1">mdi-plus</v-icon>Add Gene(s)</v-btn>
     </template>
     <v-card
       class="white"
@@ -105,11 +107,11 @@
                     cols="4"
                     class="ma-0 pa-0 text-right">
                     <v-btn
-                      :disabled="gene_ss_results.length === 0"
+                      :disabled="numUnaddedGenes === 0"
                       small
                       class="primary"
                       @click="addAllGenes()">
-                      <v-icon>mdi-plus</v-icon>Add all {{ gene_ss_results.length ? gene_ss_results.length : '' }}
+                      <v-icon>mdi-plus</v-icon>Add all {{ numUnaddedGenes > 0 ? numUnaddedGenes : '' }}
                     </v-btn>
                   </v-col>
                 </v-row>
@@ -254,10 +256,16 @@ export default {
       gene_list_text: null
     }
   },
+  computed: {
+    numUnaddedGenes () {
+      let nu = 0
+      this.gene_ss_results.forEach(gr => {
+        if (!this.isGeneSelected(gr)) nu++
+      })
+      return nu
+    }
+  },
   methods: {
-    resetAll () {
-
-    },
     gtexURLSuffix (datasetId, pageSize, format) {
       var suffix = ''
       if (datasetId) suffix += '&datasetId=' + datasetId
