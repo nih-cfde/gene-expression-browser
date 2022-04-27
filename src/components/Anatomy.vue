@@ -77,6 +77,7 @@
             @dialog_closed="addGenesDialogClosed"
           />
           <v-btn
+            :disabled="tableGenes.length === 0"
             small
             color="primary"
             class="ml-1"
@@ -101,11 +102,11 @@
                 class="text-xs-left"
                 style="white-space: nowrap;">
                 <v-chip
-                  v-if="!showSelectedGenes"
-                  :color="'rgba(' + item.colorRgb + ',0.5)'"
+                  v-if="item.gencodeId in top_expressed_genes_d"
+                  :color="'rgba(' + top_expressed_genes_d[item.gencodeId].colorRgb + ',0.5)'"
                   label
                   small
-                  class="mr-2 pa-1"><span :style="rankStyle(item.colorHex)">{{ item.rank }}</span>
+                  class="mr-2 pa-1"><span :style="rankStyle(top_expressed_genes_d[item.gencodeId].colorHex)">{{ top_expressed_genes_d[item.gencodeId].rank }}</span>
                 </v-chip>{{ item.gene }}
               </td>
 
@@ -243,6 +244,7 @@ export default {
       gtexTissues: null,
       // top-expressed genes from expression/topExpressedGene
       top_expressed_genes: null,
+      top_expressed_genes_d: {},
       // gene info from reference/gene
       genes: null,
       id2gene: {},
@@ -409,6 +411,10 @@ export default {
     },
     setTopExpressedGenes (teg) {
       this.top_expressed_genes = teg
+      this.top_expressed_genes_d = {}
+      this.top_expressed_genes.forEach(g => {
+        this.top_expressed_genes_d[g.gencodeId] = g
+      })
     },
     setGenes (gl) {
       // sort genes according to expression level

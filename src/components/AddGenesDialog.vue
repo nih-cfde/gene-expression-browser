@@ -105,11 +105,11 @@
                     cols="4"
                     class="ma-0 pa-0 text-right">
                     <v-btn
+                      :disabled="gene_ss_results.length === 0"
                       small
-		      :disabled="gene_ss_results.length === 0"
                       class="primary"
                       @click="addAllGenes()">
-                      <v-icon>mdi-plus</v-icon>Add all {{ gene_ss_results.length ? gene_ss_results.length : ''}}
+                      <v-icon>mdi-plus</v-icon>Add all {{ gene_ss_results.length ? gene_ss_results.length : '' }}
                     </v-btn>
                   </v-col>
                 </v-row>
