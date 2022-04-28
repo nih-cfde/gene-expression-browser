@@ -20,7 +20,9 @@
     </v-row>
 
     <v-row class="ma-0 py-2">
-      <v-col class="ma-0 pa-0">
+      <v-col
+        class="ma-0 pa-0"
+        cols="5">
 
         <!-- gene selection mode -->
         <v-radio-group
@@ -48,7 +50,9 @@
         </v-radio-group>
       </v-col>
 
-      <v-col class="ma-0 pa-0">
+      <v-col
+        class="ma-0 pa-0"
+        cols="7">
         <!-- display options -->
         <v-switch
           v-model="include_mito_genes"
@@ -58,6 +62,7 @@
           dense
           hide-details/>
       </v-col>
+
     </v-row>
 
     <v-row class="ma-0 pa-0">
