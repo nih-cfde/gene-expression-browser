@@ -35,14 +35,14 @@
           Compare:
           <v-radio
             key="tsm-1"
-            :label="'Top ' + numTopTissues + ' tissues'"
+            :label="'Top ' + numTopTissues + ' anatomical sites'"
             value="top"
             class="pa-0 ma-0 pl-2"
             hide-details
           />
           <v-radio
             key="tsm-2"
-            label="Specific tissue(s) only"
+            label="Specific site(s) only"
             value="custom"
             class="pa-0 ma-0 pl-4"
             hide-details
@@ -53,7 +53,7 @@
           v-if="showSelected"
           v-model="tissueSearch"
           append-icon="mdi-magnify"
-          label="Search tissues"
+          label="Search anatomical sites"
           single-line
           hide-details
           class="ma-0 pa-0 ml-3 mb-1"
@@ -206,7 +206,7 @@
                   fill-width
                   class="py-3 text-center">
                   <span class="title text--secondary">
-                    No tissue(s) selected.
+                    No anatomical site(s) selected.
                   </span>
                 </div>
               </v-col>
@@ -264,7 +264,7 @@ var violinConfig = {
 }
 
 export default {
-  name: 'GeneTopTissues',
+  name: 'GeneTissues',
   props: {
     gencodeId: {
       type: String,
@@ -341,7 +341,7 @@ export default {
       selected: [],
       headers: [
         {
-          text: 'tissue',
+          text: 'anatomical site',
           value: 'tissueSiteDetail',
           sortable: false
         },
@@ -358,7 +358,7 @@ export default {
       ],
       headers_by_sex: [
         {
-          text: 'tissue',
+          text: 'anatomical site',
           value: 'tissueSiteDetail',
           sortable: false
         },
