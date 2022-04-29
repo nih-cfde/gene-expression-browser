@@ -8,7 +8,6 @@
         v-bind="attrs"
         small
         color="primary"
-        class="ml-4"
         v-on="on"><v-icon
           small
           class="pr-1">mdi-plus</v-icon>Add Gene(s)</v-btn>

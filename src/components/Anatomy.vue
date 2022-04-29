@@ -53,14 +53,16 @@
       <v-col
         class="ma-0 pa-0"
         cols="7">
-        <!-- display options -->
-        <v-switch
-          v-model="include_mito_genes"
-          :disabled="showSelectedGenes"
-          label="Include mitochondrial genes"
-          class="pa-0 ma-0"
-          dense
-          hide-details/>
+
+        <add-anatomical-sites-dialog
+          :gtex-api="gtexAPI"
+          :gtex-ver="gtexVer"
+          :page-size="pageSize"
+          :sites="tissue_info"
+          :selected-sites-d="gtexTissuesD"
+          @dialog_closed="addSitesDialogClosed"
+        />
+
       </v-col>
 
     </v-row>
@@ -71,9 +73,19 @@
         class="ma-0 pa-0">
 
         <div
-          v-if="showSelectedGenes"
-          class="pb-2">
+          class="pb-2 pl-3">
+
+          <v-switch
+            v-if="!showSelectedGenes"
+            v-model="include_mito_genes"
+            :disabled="showSelectedGenes"
+            label="Include mitochondrial genes"
+            class="pa-0 ma-0"
+            dense
+            hide-details/>
+
           <add-genes-dialog
+            v-if="showSelectedGenes"
             :gtex-api="gtexAPI"
             :gtex-ver="gtexVer"
             :page-size="pageSize"
@@ -82,13 +94,13 @@
             @dialog_closed="addGenesDialogClosed"
           />
           <v-btn
+            v-if="showSelectedGenes"
             :disabled="tableGenes.length === 0"
             small
             color="primary"
-            class="ml-1"
             @click="removeAllGenes"><v-icon
               small
-              class="pr-1">mdi-delete</v-icon>Remove all</v-btn>
+              class="pr-1">mdi-delete</v-icon>Remove all genes</v-btn>
         </div>
 
         <!-- show top N genes -->
@@ -173,6 +185,7 @@
 
 import axios from 'axios'
 import AddGenesDialog from '@/components/AddGenesDialog.vue'
+import AddAnatomicalSitesDialog from '@/components/AddAnatomicalSitesDialog.vue'
 
 var GTEX_API = 'https://gtexportal.org/rest/v1/'
 var GTEX_VER = 'gtex_v8'
@@ -180,11 +193,11 @@ var GTEX_VER_DESCR = 'GTEx v8'
 var GENCODE_VER = 'v26'
 var GENOME_VER = 'GRCh38/hg38'
 var PAGE_SIZE = 100
-var VPAD = 40
+var VPAD = 45
 var TABLE_VPAD = 40
 var TITLE_HEIGHT = 40
-var SEARCH_GENES_HEIGHT = 35
-var MAX_BAND_WIDTH = 50
+var SEARCH_GENES_HEIGHT = 50
+var MAX_BAND_WIDTH = 40
 
 var HEATMAP_CONFIG = {
   id: 'hmplot_1',
@@ -207,7 +220,8 @@ var HEATMAP_CONFIG = {
 export default {
   name: 'Anatomy',
   components: {
-    AddGenesDialog
+    AddGenesDialog,
+    AddAnatomicalSitesDialog
   },
   props: {
     uberonIds: {
@@ -249,11 +263,12 @@ export default {
       uberonIdList: null,
 
       // tissue info
-      tissue_info: null,
+      tissue_info: [],
       uberon2tissues: null,
       detailId2tissue: null,
 
       gtexTissues: null,
+      gtexTissuesD: {},
       // top-expressed genes from expression/topExpressedGene
       top_expressed_genes: null,
       top_expressed_genes_d: {},
@@ -313,7 +328,8 @@ export default {
     },
     tableVpad () {
       let vp = this.adjustVpad(TABLE_VPAD)
-      return this.showSelectedGenes ? vp + SEARCH_GENES_HEIGHT : vp
+      //      return this.showSelectedGenes ? vp + SEARCH_GENES_HEIGHT : vp
+      return vp + SEARCH_GENES_HEIGHT
     },
     showSelectedGenes () {
       return this.gene_sel_mode === 'custom'
@@ -350,9 +366,10 @@ export default {
         let tissues = []
         uids.forEach(uid => {
           tissues = tissues.concat(this.uberon2tissues[uid])
-          this.gtexTissues = tissues
         })
         this.uberonIdList = uids
+        tissues.forEach(gt => { this.gtexTissuesD[gt.tissueSiteDetailId] = gt })
+        this.gtexTissues = tissues
       }
     },
     gtexTissues (ts) {
@@ -558,6 +575,13 @@ export default {
       let self = this
       let expnUrl = this.medianExpressionURL(this.selected_genes, this.gtexTissues)
       axios.get(expnUrl).then(function (r) { self.addExpressionData(r.data.medianGeneExpression) })
+    },
+    addSitesDialogClosed (nsel) {
+      // new list of selected anatomical sites
+      let td = {}
+      nsel.forEach(gt => { td[gt.tissueSiteDetailId] = gt })
+      this.gtexTissuesD = td
+      this.gtexTissues = nsel
     }
   }
 }
