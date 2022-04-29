@@ -46,7 +46,7 @@ export default new Router({
     {
       path: '/gene_top_tissues',
       name: 'GeneTopTissues',
-      component: () => import('@/components/GeneTopTissues.vue'),
+      component: () => import('@/components/GeneTissues.vue'),
       props: route => ({
         gencodeId: route.query.gencode_id,
         width: +route.query.width,

@@ -9,6 +9,7 @@ CFDE-20220430.1
  -Auto-truncate long gene descriptions (#11)
  -Add option to toggle inclusion of mitochondrial genes (#12)
  -Display tissue rank where known for genes in user-selected set (#17)
+ -Replace GeneTopTissues.vue with GeneTissues.vue
 
 CFDE-20220228.1 (February 28, 2022)
  -Knowledgebase/Markdown compatible iframes.
