@@ -68,6 +68,13 @@
               </v-tooltip>
             </td>
           </template>
+
+          <template v-slot:item.uberonId="{ item }">
+            <td class="text-xs-left">
+              {{ formatUberonId(item.uberonId) }}
+            </td>
+          </template>
+
         </v-data-table>
 
       </v-card-text>
@@ -115,13 +122,13 @@ export default {
           sortable: false
         },
         {
-          text: 'median TPM',
-          value: 'median',
+          text: 'ontology id',
+          value: 'uberonId',
           sortable: false
         },
         {
-          text: 'samples',
-          value: 'count',
+          text: 'RNA-Seq samples',
+          value: 'rnaSeqSampleCount',
           sortable: false
         }
       ]
@@ -148,6 +155,12 @@ export default {
     closeDialog () {
       this.$emit('dialog_closed', this.selected)
       this.openDialog = false
+    },
+    formatUberonId (uid) {
+      if (uid.match(/^\d+$/)) {
+        return 'UBERON:' + uid
+      }
+      return uid
     }
   }
 }
