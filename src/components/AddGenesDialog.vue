@@ -249,6 +249,11 @@ export default {
       required: true,
       default: null
     },
+    axiosConf: {
+      type: Object,
+      required: false,
+      default: () => {}
+    },
     pageSize: {
       type: Number,
       required: false,
@@ -299,7 +304,7 @@ export default {
     },
     searchForGenes (geneIdStr) {
       let geneUrl = this.gtexApi + 'reference/gene?geneId=' + geneIdStr + this.gtexURLSuffix(this.gtexVer, this.pageSize, 'json')
-      const pr = axios.get(geneUrl)
+      const pr = axios.get(geneUrl, this.axiosConf)
       let self = this
       pr.then(function (res) {
         if (res['data']['gene']) {

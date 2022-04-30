@@ -33,6 +33,17 @@ export default new Router({
       })
     },
     {
+      path: '/anatomy_multi',
+      name: 'AnatomyMultiSource',
+      component: () => import('@/components/AnatomyMultiSource.vue'),
+      props: route => ({
+        uberonIds: route.query.uberon_ids,
+        width: +route.query.width,
+        height: +route.query.height,
+        numTopGenes: +route.query.numTopGenes
+      })
+    },
+    {
       path: '/biosample',
       name: 'Biosample',
       component: () => import('@/components/Biosample.vue'),

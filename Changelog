@@ -10,6 +10,7 @@ CFDE-20220430.1
  -Add option to toggle inclusion of mitochondrial genes (#12)
  -Display tissue rank where known for genes in user-selected set (#17)
  -Replace GeneTopTissues.vue with GeneTissues.vue
+ -Add new AnatomyMultiSource iframe with support for multiple data sources (#10)
 
 CFDE-20220228.1 (February 28, 2022)
  -Knowledgebase/Markdown compatible iframes.

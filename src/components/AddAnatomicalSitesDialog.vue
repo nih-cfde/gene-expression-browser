@@ -1,7 +1,7 @@
 <template>
   <v-dialog
     v-model="openDialog"
-    max-width="50%"
+    :max-width="showSource ? '80%' : '60%'"
     scrollable>
     <template v-slot:activator="{ on, attrs }">
       <v-btn
@@ -108,36 +108,55 @@ export default {
     selectedSitesD: {
       type: Object,
       required: true
+    },
+    showSource: {
+      type: Number,
+      required: false,
+      default: 0
     }
   },
   data () {
     return {
       openDialog: false,
       tissueSearch: '',
-      selected: [],
-      headers: [
-        {
-          text: 'anatomical site',
-          value: 'tissueSiteDetail',
-          sortable: false
-        },
-        {
-          text: 'ontology id',
-          value: 'uberonId',
-          sortable: false
-        },
-        {
-          text: 'RNA-Seq samples',
-          value: 'rnaSeqSampleCount',
-          sortable: false
-        }
-      ]
+      selected: []
     }
   },
   computed: {
     tableSites () {
       if (this.sites != null) return this.sites
       return []
+    },
+    headers () {
+      let headers = [
+        {
+          text: 'anatomical site',
+          value: 'tissueSiteDetail',
+          sortable: true
+        },
+        {
+          text: 'ontology id',
+          value: 'uberonId',
+          sortable: true
+        },
+        {
+          text: 'RNA-Seq samples',
+          value: 'rnaSeqSampleCount',
+          sortable: true
+        }
+      ]
+
+      let srcHeader = {
+        text: 'source',
+        value: 'source',
+        sortable: true
+      }
+
+      if (this.showSource) {
+        headers = [headers[0], srcHeader, headers[1], headers[2]]
+      }
+
+      return headers
     }
   },
   watch: {
