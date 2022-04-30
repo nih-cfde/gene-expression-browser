@@ -375,7 +375,7 @@ export default {
     gtexTissues (ts) {
       if (ts == null) return
       // retrieve top-expressed numTopGenes genes
-      let tissueStr = '&tissueSiteDetailId=' + encodeURIComponent(ts[0]['tissueSiteDetailId'])
+      let tissueStr = 'tissueSiteDetailId=' + encodeURIComponent(ts[0]['tissueSiteDetailId'])
       let sortStr = '&sortBy=median&sortDirection=desc'
       // workaround for bug in GTEx API, which filters if 'filterMtGene=false'
       let mitoStr = this.include_mito_genes ? '' : '&filterMtGene=true'
