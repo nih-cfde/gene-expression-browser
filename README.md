@@ -26,9 +26,10 @@ The expression browser is integrated with Deriva
 1. Basic usage. `gencodeId`, `width`, and `height` are all required:
 
    `/gene_tissues?gencode_id=ENSG00000000003&width=1200&height=450`
+   
    ![Basic gene_tissues iframe without gencode version](../main/doc/images/GeneTissues-basic.png?raw=true)
 
-`<iframe style='width: 1200px; height: 450px; border: 1px solid black;' src='https://<hostname>/gene_tissues?gencode_id=ENSG00000000003&width=1200&height=450'></iframe>`
+   `<iframe style='width: 1200px; height: 450px; border: 1px solid black;' src='https://<hostname>/gene_tissues?gencode_id=ENSG00000000003&width=1200&height=450'></iframe>`
 
 2. The version component of the `gencodeId` is optional:
 
