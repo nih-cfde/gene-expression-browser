@@ -5,7 +5,7 @@
 
 ## GeneTissues
 
-![gene_tissues](../blob/main/doc/images/GeneTissues-basic.png?raw=true)
+![gene_tissues](../main/doc/images/GeneTissues-basic.png?raw=true)
 
 Endpoint: /gene_tissues
 
