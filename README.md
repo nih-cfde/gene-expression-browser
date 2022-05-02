@@ -2,7 +2,14 @@
 
 # CFDE knowledge base iframe endpoints
 
-The expression browser is integrated with Deriva
+The expression browser is integrated with Deriva through the Knowledge base, a Markdown-based facility that allows
+arbitrary content to be associated with controlled vocabulary terms (e.g., including genes and anatomical sites.)
+To facilitate this integration the expression browser provides URLs/endpoints suitable for inclusion within an
+HTML `<iframe>` in the Knowledge base Markdown. The main iframe endpoints, corresponding to genes and anatomical sites,
+are:
+
+- [GeneTissues](#genetissues)
+- [Anatomy](#anatomy)
 
 
 ## GeneTissues
