@@ -5,7 +5,7 @@
 
 ## GeneTissues
 
-[gene_tissues](https://raw.githubusercontent.com/nih-cfde/gene-expression-browser/main/doc/images/GeneTissues-basic.png)
+![gene_tissues](../blob/main/doc/images/GeneTissues-basic.png?raw=true)
 
 Endpoint: /gene_tissues
 
