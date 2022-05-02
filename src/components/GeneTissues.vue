@@ -150,7 +150,6 @@
           class="pa-0 ma-0">
 
           <v-container
-            v-if="!hideControls"
             class="pa-0 ma-0 pt-2 pb-4">
             <v-row
               class="pa-0 ma-0"
@@ -287,11 +286,6 @@ export default {
       default: 10
     },
     hideTitle: {
-      type: Number,
-      required: false,
-      default: 0
-    },
-    hideControls: {
       type: Number,
       required: false,
       default: 0
@@ -678,9 +672,7 @@ export default {
       if (!this.hideTitle) {
         vp += TITLE_HEIGHT
       }
-      if (!this.hideControls) {
-        vp += CONTROLS_HEIGHT
-      }
+      vp += CONTROLS_HEIGHT
       return vp
     }
   }
