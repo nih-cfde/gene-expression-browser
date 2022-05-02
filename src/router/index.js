@@ -29,7 +29,7 @@ export default new Router({
         uberonIds: route.query.uberon_ids,
         width: +route.query.width,
         height: +route.query.height,
-        numTopGenes: +route.query.numTopGenes
+        numTopGenes: +route.query.numTopGenes ? +route.query.numTopGenes : 10,
       })
     },
     {
@@ -40,7 +40,7 @@ export default new Router({
         uberonIds: route.query.uberon_ids,
         width: +route.query.width,
         height: +route.query.height,
-        numTopGenes: +route.query.numTopGenes
+        numTopGenes: +route.query.numTopGenes ? +route.query.numTopGenes : 10,
       })
     },
     {
@@ -51,7 +51,7 @@ export default new Router({
         uberonId: route.query.uberon_id,
         width: +route.query.width,
         height: +route.query.height,
-        numTopGenes: +route.query.numTopGenes
+        numTopGenes: +route.query.numTopGenes ? +route.query.numTopGenes : 10,
       })
     },
     {
@@ -62,7 +62,7 @@ export default new Router({
         gencodeId: route.query.gencode_id,
         width: +route.query.width,
         height: +route.query.height,
-        numTopTissues: +route.query.numTopTissues,
+        numTopTissues: route.query.numTopTissues ? +route.query.numTopTissues : 10,
         hideTitle: +route.query.hideTitle,
         hideControls: +route.query.hideControls
       })
@@ -75,7 +75,7 @@ export default new Router({
         gencodeId: route.query.gencode_id,
         width: +route.query.width,
         height: +route.query.height,
-        numTopTissues: +route.query.numTopTissues,
+        numTopTissues: route.query.numTopTissues ? +route.query.numTopTissues : 10,
         hideTitle: +route.query.hideTitle,
         hideControls: +route.query.hideControls,
         uberonIds: route.query.uberonIds,
