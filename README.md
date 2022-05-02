@@ -2,6 +2,8 @@
 
 # CFDE knowledge base iframe endpoints
 
+The expression browser is integrated with Deriva
+
 
 ## GeneTissues
 
@@ -23,11 +25,10 @@
 
 1. Basic usage. `gencodeId`, `width`, and `height` are all required:
 
+   `/gene_tissues?gencode_id=ENSG00000000003&width=1200&height=450`
    ![Basic gene_tissues iframe without gencode version](../main/doc/images/GeneTissues-basic.png?raw=true)
 
-```
-<iframe style='width: 1200px; height: 450px; border: 1px solid black;' src='https://<hostname>/gene_tissues?gencode_id=ENSG00000000003&width=1200&height=450'></iframe>
-```
+`<iframe style='width: 1200px; height: 450px; border: 1px solid black;' src='https://<hostname>/gene_tissues?gencode_id=ENSG00000000003&width=1200&height=450'></iframe>`
 
 2. The version component of the `gencodeId` is optional:
 
@@ -37,7 +38,7 @@
 <iframe style='width: 1200px; height: 450px; border: 1px solid black;' src='https://<hostname>/gene_tissues?gencode_id=ENSG00000000003.14&width=1200&height=450'></iframe>
 ```
 
-3. Changing `numTopTissues` from the default of 10 to 15:
+3. Change `numTopTissues` from the default of 10 to 15:
 
    ![gene_tissues iframe with gencode version](../main/doc/images/GeneTissues-15-top-tissues.png?raw=true)
 
@@ -45,7 +46,7 @@
 <iframe style='width: 1200px; height: 450px; border: 1px solid black;' src='https://<hostname>/gene_tissues?gencode_id=ENSG00000000003.14&width=1200&height=450&numTopTissues=15'></iframe>
 ```
   
-4. Setting `hideTitle=1` to suppress the title bar at the top:
+4. Set `hideTitle=1` to suppress the title bar at the top:
 
    ![gene_tissues iframe with gencode version](../main/doc/images/GeneTissues-hide-title.png?raw=true)
 
@@ -53,7 +54,9 @@
 <iframe style='width: 1200px; height: 450px; border: 1px solid black;' src='https://<hostname>/gene_tissues?gencode_id=ENSG00000000003.14&width=1200&height=450&hideTitle=1'></iframe>
 ```  
 
-5. Using `tissueSiteDetailIds` to initialize the iframe with a comparison of Liver and Lung, instead of the top 10 tissues:
+5. Use `tissueSiteDetailIds` to initialize the iframe with a comparison of Liver and Lung, instead of the top 10 tissues. Note that
+anatomical sites are color-coded and the numbers indicate the ranking of each anatomical site for this particular gene (i.e., 25 =
+25th highest median TPM value):
 
    ![gene_tissues iframe with gencode version](../main/doc/images/GeneTissues-liver-lung.png?raw=true)
 
@@ -61,7 +64,7 @@
 <iframe style='width: 1200px; height: 450px; border: 1px solid black;' src='https://<hostname>/gene_tissues?gencode_id=ENSG00000000003.14&width=1200&height=450&tissueSiteDetailIds=Liver,Lung'></iframe>
 ```
 
-6. Using `tissueSiteDetailIds` and `uberonIds` to compare Liver, Lung, and Adrenal Gland (UBERON:0002369):
+6. Use `tissueSiteDetailIds` and `uberonIds` to compare Liver, Lung, and Adrenal Gland (UBERON:0002369):
 
    ![gene_tissues iframe with gencode version](../main/doc/images/GeneTissues-liver-lung-uberon.png?raw=true)
 
