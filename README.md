@@ -71,19 +71,19 @@
 
 ### Interactive features
 
-[gene_tissues iframe showing specific sites instead of top 10](../main/doc/images/GeneTissues-specific-sites.png)
+![gene_tissues iframe showing specific sites instead of top 10](../main/doc/images/GeneTissues-specific-sites.png)
 
-[gene_tissues iframe search for anatomical terms matching 'brain'](../main/doc/images/GeneTissues-search-brain.png)
+![gene_tissues iframe search for anatomical terms matching 'brain'](../main/doc/images/GeneTissues-search-brain.png)
 
-[gene_tissues iframe hover over anatomical term to see full description](../main/doc/images/GeneTissues-tissue-hover.png)
+![gene_tissues iframe hover over anatomical term to see full description](../main/doc/images/GeneTissues-tissue-hover.png)
 
-[gene_tissues iframe log scale display](../main/doc/images/GeneTissues-log-scale.png)
+![gene_tissues iframe log scale display](../main/doc/images/GeneTissues-log-scale.png)
 
-[gene_tissues iframe show or hide outliers](../main/doc/images/GeneTissues-no-outliers.png)
+![gene_tissues iframe show or hide outliers](../main/doc/images/GeneTissues-no-outliers.png)
 
-[gene_tissues iframe subset by sex](../main/doc/images/GeneTissues-subset-by-sex.png)
+![gene_tissues iframe subset by sex](../main/doc/images/GeneTissues-subset-by-sex.png)
 
-[gene_tissues iframe hover over violin plo]t(../main/doc/images/GeneTissues-violin-hover.png)
+![gene_tissues iframe hover over violin plot](../main/doc/images/GeneTissues-violin-hover.png)
 
 
 ## Anatomy
