@@ -3,10 +3,10 @@
 # CFDE knowledge base iframe endpoints
 
 The expression browser is integrated with Deriva through the Knowledge base, a Markdown-based facility that allows
-arbitrary content to be associated with controlled vocabulary terms (e.g., including genes and anatomical sites.)
+arbitrary content to be associated with controlled vocabulary terms (e.g., genes and anatomical sites.)
 To facilitate this integration the expression browser provides URLs/endpoints suitable for inclusion within an
-HTML `<iframe>` in the Knowledge base Markdown. The main iframe endpoints, corresponding to genes and anatomical sites,
-are:
+HTML `<iframe>` in the Knowledge base Markdown. The main iframe endpoints, intended to be used in the Markdown
+for genes and anatomical sites, respectively, are:
 
 - [GeneTissues](#genetissues)
 - [Anatomy](#anatomy)
@@ -14,13 +14,15 @@ are:
 
 ## GeneTissues
 
+The GeneTissues iframe endpoint, displaying expression data for ENSG00000000003/TSPAN6 (tetraspanin 6):
+
 ![gene_tissues](../main/doc/images/GeneTissues-basic.png?raw=true)
 
 ### Endpoint: `/gene_tissues`
 
 ### Parameters:
 
- - `gencodeId`: Ensembl id (e.g,. "ENSG00000000003") for the gene for which to display expression data. (required)
+ - `gencodeId`: Ensembl id (e.g,. "ENSG00000000003") of the gene for which to display expression data. (required)
  - `width`: Width in pixels of the containing iframe. (required)
  - `height`: Height in pixels of the containing iframe. (required)
  - `numTopTissues`: Number of top tissues to display (default = 10)
@@ -30,7 +32,7 @@ are:
 
 ### Usage examples
 
-1. Basic usage. `gencodeId`, `width`, and `height` are all required:
+1. Basic usage. `gencodeId`, `width`, and `height` are all required parameters:
 
    `/gene_tissues?gencode_id=ENSG00000000003&width=1200&height=450`
    
@@ -38,7 +40,7 @@ are:
 
    `<iframe style='width: 1200px; height: 450px; border: 1px solid black;' src='https://<hostname>/gene_tissues?gencode_id=ENSG00000000003&width=1200&height=450'></iframe>`
 
-2. The version component of the `gencodeId` is optional:
+2. The version component of the `gencodeId` is optional but may be supplied:
 
    `gene_tissues?gencode_id=ENSG00000000003.14&width=1200&height=450`
 
@@ -64,7 +66,7 @@ are:
 
 5. Use `tissueSiteDetailIds` to initialize the iframe with a comparison of Liver and Lung, instead of the top 10 tissues. Note that
 anatomical sites are color-coded and the numbers indicate the ranking of each anatomical site for this particular gene (i.e., 25 =
-25th highest median TPM value):
+anatomical site with the 25th highest median TPM value):
 
    `gene_tissues?gencode_id=ENSG00000000003.14&width=1200&height=450&tissueSiteDetailIds=Liver,Lung`
 
@@ -72,7 +74,7 @@ anatomical sites are color-coded and the numbers indicate the ranking of each an
 
    `<iframe style='width: 1200px; height: 450px; border: 1px solid black;' src='https://<hostname>/gene_tissues?gencode_id=ENSG00000000003.14&width=1200&height=450&tissueSiteDetailIds=Liver,Lung'></iframe>`
 
-6. Use `tissueSiteDetailIds` and `uberonIds` to compare Liver, Lung, and Adrenal Gland (UBERON:0002369):
+6. Use `tissueSiteDetailIds` and `uberonIds` to compare Liver, Lung, and Adrenal Gland (referenced via UBERON:0002369):
 
    `gene_tissues?gencode_id=ENSG00000000003.14&width=1200&height=450&tissueSiteDetailIds=Liver,Lung&uberonIds=UBERON:0002369`
 
@@ -83,24 +85,31 @@ anatomical sites are color-coded and the numbers indicate the ranking of each an
 ### Interactive features
 
  - Click on "Specific site(s) only" to select anatomical sites for comparison instead of displaying the top N:
+ 
    ![gene_tissues iframe showing specific sites instead of top 10](../main/doc/images/GeneTissues-specific-sites.png)
 
  - Enter a term (e.g., "brain") to search for anatomical sites:
+ 
    ![gene_tissues iframe search for anatomical terms matching 'brain'](../main/doc/images/GeneTissues-search-brain.png)
 
  - Hover over an anatomical site to see the full description:
+ 
    ![gene_tissues iframe hover over anatomical term to see full description](../main/doc/images/GeneTissues-tissue-hover.png)
 
  - Select "Log scale" to use a logarithmic scale for the violin plots:
+ 
    ![gene_tissues iframe log scale display](../main/doc/images/GeneTissues-log-scale.png)
 
  - Toggle the display of outliers with the "Show outliers" slider:
+ 
    ![gene_tissues iframe show or hide outliers](../main/doc/images/GeneTissues-no-outliers.png)
 
  - Select "Subset by sex" to compare expression between male and female subjects:
+ 
    ![gene_tissues iframe subset by sex](../main/doc/images/GeneTissues-subset-by-sex.png)
 
  - Hover over the violin plots to see the anatomical site and median TPM:
+ 
    ![gene_tissues iframe hover over violin plot](../main/doc/images/GeneTissues-violin-hover.png)
 
 
