@@ -71,19 +71,26 @@
 
 ### Interactive features
 
-![gene_tissues iframe showing specific sites instead of top 10](../main/doc/images/GeneTissues-specific-sites.png)
+ - Click on "Specific site(s) only" to select anatomical sites for comparison instead of displaying the top N:
+   ![gene_tissues iframe showing specific sites instead of top 10](../main/doc/images/GeneTissues-specific-sites.png)
 
-![gene_tissues iframe search for anatomical terms matching 'brain'](../main/doc/images/GeneTissues-search-brain.png)
+ - Enter a term (e.g., "brain") to search for anatomical sites:
+   ![gene_tissues iframe search for anatomical terms matching 'brain'](../main/doc/images/GeneTissues-search-brain.png)
 
-![gene_tissues iframe hover over anatomical term to see full description](../main/doc/images/GeneTissues-tissue-hover.png)
+ - Hover over an anatomical site to see the full description:
+   ![gene_tissues iframe hover over anatomical term to see full description](../main/doc/images/GeneTissues-tissue-hover.png)
 
-![gene_tissues iframe log scale display](../main/doc/images/GeneTissues-log-scale.png)
+ - Select "Log scale" to use a logarithmic scale for the violin plots:
+   ![gene_tissues iframe log scale display](../main/doc/images/GeneTissues-log-scale.png)
 
-![gene_tissues iframe show or hide outliers](../main/doc/images/GeneTissues-no-outliers.png)
+ - Toggle the display of outliers with the "Show outliers" slider:
+   ![gene_tissues iframe show or hide outliers](../main/doc/images/GeneTissues-no-outliers.png)
 
-![gene_tissues iframe subset by sex](../main/doc/images/GeneTissues-subset-by-sex.png)
+ - Select "Subset by sex" to compare expression between male and female subjects:
+   ![gene_tissues iframe subset by sex](../main/doc/images/GeneTissues-subset-by-sex.png)
 
-![gene_tissues iframe hover over violin plot](../main/doc/images/GeneTissues-violin-hover.png)
+ - Hover over the violin plots to see the anatomical site and median TPM:
+   ![gene_tissues iframe hover over violin plot](../main/doc/images/GeneTissues-violin-hover.png)
 
 
 ## Anatomy
