@@ -19,6 +19,24 @@ Parameters:
  - uberonIds: Comma-delimited list of ids from the Uberon multi-species anatomy ontology (e.g,. "UBERON:0002037,UBERON:0002369")
  - tissueSiteDetailIds: Comma-delimited list of GTEx tissueSiteDetailIds. (e.g., "Liver,Lung")
 
+### Examples
+
+- Basic usage. gencodeId, width, and height are all required:
+
+![Basic gene_tissues iframe without gencode version](../main/doc/images/GeneTissues-basic.png?raw=true)
+
+```
+<iframe style='width: 1200px; height: 450px; border: 1px solid black;' src='https://your_host_here/gene_tissues?gencode_id=ENSG00000000003&width=1200&height=450'></iframe>
+```
+
+- The version component of the gencodeId is optional:
+
+![gene_tissues iframe with gencode version](../main/doc/images/GeneTissues-with-gencode-ver.png?raw=true)
+
+```
+<iframe style='width: 1200px; height: 450px; border: 1px solid black;' src='https://your_host_here/gene_tissues?gencode_id=ENSG00000000003.14&width=1200&height=450'></iframe>
+```
+
 
 ## Anatomy
 
