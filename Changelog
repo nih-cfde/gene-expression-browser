@@ -1,3 +1,7 @@
+CFDE-20220430.2
+ -Set defaults for numTopGenes, numTopTissues in router.
+ -Remove hideControls parameter from GeneTissues.vue
+
 CFDE-20220430.1
  -Added new GeneTissues iframe to allow user-selected tissues (#4)
  -Fix GeneTissues bug displaying sample counts (#7)
