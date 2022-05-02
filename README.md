@@ -21,22 +21,53 @@ Parameters:
 
 ### Examples
 
-- Basic usage. gencodeId, width, and height are all required:
+1. Basic usage. gencodeId, width, and height are all required:
 
-![Basic gene_tissues iframe without gencode version](../main/doc/images/GeneTissues-basic.png?raw=true)
+   ![Basic gene_tissues iframe without gencode version](../main/doc/images/GeneTissues-basic.png?raw=true)
 
 ```
 <iframe style='width: 1200px; height: 450px; border: 1px solid black;' src='https://your_host_here/gene_tissues?gencode_id=ENSG00000000003&width=1200&height=450'></iframe>
 ```
 
-- The version component of the gencodeId is optional:
+2. The version component of the gencodeId is optional:
 
-![gene_tissues iframe with gencode version](../main/doc/images/GeneTissues-with-gencode-ver.png?raw=true)
+   ![gene_tissues iframe with gencode version](../main/doc/images/GeneTissues-with-gencode-ver.png?raw=true)
 
 ```
 <iframe style='width: 1200px; height: 450px; border: 1px solid black;' src='https://your_host_here/gene_tissues?gencode_id=ENSG00000000003.14&width=1200&height=450'></iframe>
 ```
 
+3. Changing numTopTissues from the default of 10 to 15:
+
+   ![gene_tissues iframe with gencode version](../main/doc/images/GeneTissues-15-top-tissues.png?raw=true)
+
+```
+<iframe style='width: 1200px; height: 450px; border: 1px solid black;' src='http://localhost:8080/gene_tissues?gencode_id=ENSG00000000003.14&width=1200&height=450&numTopTissues=15'></iframe>
+```
+  
+4. Setting hideTitle=1 to suppress the title at the top:
+
+   ![gene_tissues iframe with gencode version](../main/doc/images/GeneTissues-hide-title.png?raw=true)
+
+```
+<iframe style='width: 1200px; height: 450px; border: 1px solid black;' src='http://localhost:8080/gene_tissues?gencode_id=ENSG00000000003.14&width=1200&height=450&hideTitle=1'></iframe>
+```  
+
+5. Using tissueSiteDetailIds to initialize the iframe with a comparison of Liver and Lung, instead of the top 10 tissues:
+
+   ![gene_tissues iframe with gencode version](../main/doc/images/GeneTissues-liver-lung.png?raw=true)
+
+```
+<iframe style='width: 1200px; height: 450px; border: 1px solid black;' src='http://localhost:8080/gene_tissues?gencode_id=ENSG00000000003.14&width=1200&height=450&tissueSiteDetailIds=Liver,Lung'></iframe>
+```
+
+6. Using tissueSiteDetailIds and uberonIds to compare Liver, Lung, and Adrenal Gland (UBERON:0002369):
+
+   ![gene_tissues iframe with gencode version](../main/doc/images/GeneTissues-liver-lung-uberon.png?raw=true)
+
+```
+<iframe style='width: 1200px; height: 450px; border: 1px solid black;' src='http://localhost:8080/gene_tissues?gencode_id=ENSG00000000003.14&width=1200&height=450&tissueSiteDetailIds=Liver,Lung&uberonIds=UBERON:0002369'></iframe>
+```
 
 ## Anatomy
 
