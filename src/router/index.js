@@ -29,7 +29,7 @@ export default new Router({
         uberonIds: route.query.uberon_ids,
         width: +route.query.width,
         height: +route.query.height,
-        numTopGenes: +route.query.numTopGenes ? +route.query.numTopGenes : 10,
+        numTopGenes: +route.query.numTopGenes ? +route.query.numTopGenes : 10
       })
     },
     {
@@ -40,7 +40,7 @@ export default new Router({
         uberonIds: route.query.uberon_ids,
         width: +route.query.width,
         height: +route.query.height,
-        numTopGenes: +route.query.numTopGenes ? +route.query.numTopGenes : 10,
+        numTopGenes: +route.query.numTopGenes ? +route.query.numTopGenes : 10
       })
     },
     {
@@ -51,7 +51,7 @@ export default new Router({
         uberonId: route.query.uberon_id,
         width: +route.query.width,
         height: +route.query.height,
-        numTopGenes: +route.query.numTopGenes ? +route.query.numTopGenes : 10,
+        numTopGenes: +route.query.numTopGenes ? +route.query.numTopGenes : 10
       })
     },
     {
