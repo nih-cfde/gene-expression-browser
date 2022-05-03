@@ -14,7 +14,7 @@
           <span class="font-weight-bold white--text"><img
             src="static/CFDE-icon-1.png"
             style="height: 2rem;"
-            class="pr-2">{{ gtexVerDescr }} expression data for {{ refUberonId }} / {{ gtexTissues != null ? gtexTissues[0].tissueSiteDetail : '' }}</span>
+            class="pr-2">{{ gtexVerDescr }} expression data for {{ refUberonId }} / {{ numGtexTissues > 0 ? gtexTissues[0].tissueSiteDetail : '' }}</span>
         </div>
       </v-col>
     </v-row>
@@ -35,7 +35,7 @@
           Show:
           <v-radio
             key="tsg-1"
-            :label="'Top ' + numTopGenes + ' genes' + (gtexTissues != null ? ' in ' + gtexTissues[0].tissueSiteDetail : '')"
+            :label="'Top ' + numTopGenes + ' genes' + (numGtexTissues > 0 ? ' in ' + gtexTissues[0].tissueSiteDetail : '')"
             value="top"
             class="pa-0 ma-0 pl-2"
             hide-details
@@ -154,7 +154,27 @@
         <div id="hmplot_1"/>
 
         <v-container
-          v-if="showSelectedGenes && (tableGenes.length === 0)"
+          v-if="numGtexTissues === 0"
+          fluid
+          fill-width>
+          <v-row>
+            <v-col cols="12">
+              <div
+                column
+                align-center
+                justify-center
+                fill-width
+                class="py-3 text-center">
+                <span class="title text--secondary">
+                  No anatomical site(s) selected.
+                </span>
+              </div>
+            </v-col>
+          </v-row>
+        </v-container>
+
+        <v-container
+          v-else-if="showSelectedGenes && (tableGenes.length === 0)"
           fluid
           fill-width>
           <v-row>
@@ -342,6 +362,10 @@ export default {
         return this.selected_genes
       }
       return this.topGenes != null ? this.topGenes : []
+    },
+    numGtexTissues () {
+      if (this.gtexTissues === null) return 0
+      return this.gtexTissues.length
     }
   },
   watch: {
@@ -373,7 +397,7 @@ export default {
       }
     },
     gtexTissues (ts) {
-      if (ts == null) return
+      if ((ts == null) || (ts.length === 0)) return
       // retrieve top-expressed numTopGenes genes
       let tissueStr = 'tissueSiteDetailId=' + encodeURIComponent(ts[0]['tissueSiteDetailId'])
       let sortStr = '&sortBy=median&sortDirection=desc'
@@ -432,10 +456,12 @@ export default {
       return g.description.substring(0, g.description.indexOf('['))
     },
     getGeneExpInRef (g) {
-      let key = this.gtexTissues[0].tissueSiteDetailId + ':' + g.gencodeId
-      if ((this.tg2expression != null) && (key in this.tg2expression)) {
-        let ev = this.tg2expression[key].median
-        return ev.toFixed(2)
+      if (this.numGtexTissues > 0) {
+        let key = this.gtexTissues[0].tissueSiteDetailId + ':' + g.gencodeId
+        if ((this.tg2expression != null) && (key in this.tg2expression)) {
+          let ev = this.tg2expression[key].median
+          return ev.toFixed(2)
+        }
       }
       return '-'
     },
@@ -509,7 +535,7 @@ export default {
     displayExpressionData () {
       if (this.genes == null || this.tissue_info == null || this.tg2expression == null) return
       this.clearExpressionData()
-      if (this.tableGenes.length === 0) return
+      if ((this.tableGenes.length === 0) || (this.numGtexTissues === 0)) return
       let heatmapConfig = {...HEATMAP_CONFIG}
       heatmapConfig.data = []
       heatmapConfig.width = Math.floor(this.width * (7 / 12.0))
@@ -540,6 +566,7 @@ export default {
         })
       })
 
+      if (heatmapConfig.data.length === 0) return
       GTExViz.heatmap(heatmapConfig)
     },
     adjustVpad (vpad) {
@@ -582,6 +609,7 @@ export default {
       nsel.forEach(gt => { td[gt.tissueSiteDetailId] = gt })
       this.gtexTissuesD = td
       this.gtexTissues = nsel
+      if (nsel.length === 0) this.displayExpressionData()
     }
   }
 }

@@ -1,6 +1,7 @@
 CFDE-20220430.2
- -Set defaults for numTopGenes, numTopTissues in router.
+ -Set defaults for numTopGenes, numTopTissues in router
  -Remove hideControls parameter from GeneTissues.vue
+ -Fix Javascript error when all anatomical site(s) removed (#19)
 
 CFDE-20220430.1
  -Added new GeneTissues iframe to allow user-selected tissues (#4)
