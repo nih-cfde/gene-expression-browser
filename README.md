@@ -121,7 +121,7 @@ anatomical site with the 25th highest median TPM value):
 In the following screenshot the Anatomy iframe endpoint displays the 25 most highly-expressed genes in
 the adrenal gland (UBERON:0002369), excluding mitochondrial genes. 
 
-![anatomy](../main/doc/images/Anatomy-basic.png?raw=true)
+![anatomy](../main/doc/images/Anatomy-no-mito.png?raw=true)
 
 ### Endpoint: `/anatomy`
 
@@ -146,23 +146,35 @@ the adrenal gland (UBERON:0002369), excluding mitochondrial genes.
 
    `anatomy?uberon_ids=UBERON%3A0002369,UBERON%3A0002037&width=1400&height=550&numTopGenes=25`
    
-   ![Anatomy iframe with 25 top genes](../main/doc/images/Anatomy-top-25-genes.png?raw=true)
+   ![Anatomy iframe with 25 top genes](../main/doc/images/Anatomy-25-top-genes.png?raw=true)
 
    `<iframe style='width: 1400px; height: 550px; border: 1px solid black;' src='https://<hostname>/anatomy?uberon_ids=UBERON%3A0002369,UBERON%3A0002037&width=1400&height=550&numTopGenes=25'></iframe>`
-
 
 ### Interactive features
 
  - Toggle the inclusion of mitochondrial genes (in the top N expressed genes only) with the "Include mitochondrial genes" option:
 
+   ![anatomy iframe with mitochondrial genes filtered](../main/doc/images/Anatomy-no-mito.png)
+
+ - Click on "Add Anatomical Site(s)" to add/remove anatomical sites from the comparison:
+
+   ![anatomy iframe with anatomical sites dialog](../main/doc/images/Anatomy-add-sites.png) 
+
+ - Enter a term (e.g., "blood") to search for anatomical sites:
+ 
+   ![anatomy iframe search for anatomical terms matching 'blood'](../main/doc/images/Anatomy-search-sites.png)
+
  - Click on "Specific gene(s)" to select specific genes of interest for comparison instead of displaying the top N:
+
+   ![anatomy iframe option to display user-selected genes](../main/doc/images/Anatomy-specific-genes.png)
 
  - Add specific genes using a keyword search/partial match on gene name:
 
+   ![anatomy iframe search for genes by keyword](../main/doc/images/Anatomy-search-genes.png)
+
  - Add specific genes by cutting and pasting gencode ids into the provided textarea:
 
- - Click on "Add Anatomical Site(s)" to add/remove anatomical sites from the comparison:
- 
+   ![anatomy iframe cut and paste list of gencode ids](../main/doc/images/Anatomy-paste-genes.png)
 
 ## AnatomyMultiSource
 
