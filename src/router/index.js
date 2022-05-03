@@ -44,17 +44,6 @@ export default new Router({
       })
     },
     {
-      path: '/biosample',
-      name: 'Biosample',
-      component: () => import('@/components/Biosample.vue'),
-      props: route => ({
-        uberonId: route.query.uberon_id,
-        width: +route.query.width,
-        height: +route.query.height,
-        numTopGenes: +route.query.numTopGenes ? +route.query.numTopGenes : 10
-      })
-    },
-    {
       path: '/gene_top_tissues',
       name: 'GeneTopTissues',
       component: () => import('@/components/GeneTissues.vue'),
