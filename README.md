@@ -119,7 +119,8 @@ anatomical site with the 25th highest median TPM value):
 ## Anatomy
 
 In the following screenshot the Anatomy iframe endpoint displays the 25 most highly-expressed genes in
-the adrenal gland (UBERON:0002369):
+the adrenal gland (UBERON:0002369). It makes use of the Broad Institute's [GTEx-Viz](https://github.com/broadinstitute/gtex-viz)
+Expression Map and the GTEx Portal's [public API](https://gtexportal.org/home/api-docs/index.html):
 
 ![anatomy](../main/doc/images/Anatomy-no-mito.png?raw=true)
 
@@ -176,7 +177,7 @@ the adrenal gland (UBERON:0002369):
 
    ![anatomy iframe cut and paste list of gencode ids](../main/doc/images/Anatomy-paste-genes.png)
 
- - Any user-selected genes that also appear in the top 25 are highlighted:
+ - Any user-selected genes that also appear in the top 25 are highlighted (ACTB and CYP17A1 in this example):
 
    ![anatomy iframe highlights top N genes](../main/doc/images/Anatomy-highlight-top-genes.png)
 
