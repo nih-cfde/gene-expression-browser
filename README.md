@@ -1,6 +1,6 @@
 # CFDE/GTEx Gene Expression Browser Prototype
 
-# CFDE knowledge base iframe endpoints
+# Knowledge Base iframe endpoints
 
 The expression browser is integrated with Deriva through the Knowledge base, a Markdown-based facility that allows
 arbitrary content to be associated with controlled vocabulary terms (e.g., genes and anatomical sites.)
@@ -14,7 +14,9 @@ for genes and anatomical sites, respectively, are:
 
 ## GeneTissues
 
-The GeneTissues iframe endpoint, displaying expression data for ENSG00000000003/TSPAN6 (tetraspanin 6):
+Here is the GeneTissues iframe endpoint displaying expression data for ENSG00000000003/TSPAN6 (tetraspanin 6),
+using the Broad Institute's [GTEx-Viz](https://github.com/broadinstitute/gtex-viz) violin plot and the GTEx
+Portal's [public API](https://gtexportal.org/home/api-docs/index.html):
 
 ![gene_tissues](../main/doc/images/GeneTissues-basic.png?raw=true)
 
