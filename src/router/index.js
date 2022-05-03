@@ -7,20 +7,16 @@ export default new Router({
   // mode: 'hash',
   mode: 'history',
   routes: [
-    {
-      path: '/',
-      redirect: '/usecase1'
-    },
-    {
-      path: '/usecase1',
-      name: 'ViolinPlot',
-      component: () => import('@/components/ViolinPlot.vue')
-    },
-    {
-      path: '/multi',
-      name: 'MultiSource',
-      component: () => import('@/components/MultiSource.vue')
-    },
+    //    {
+    //      path: '/usecase1',
+    //      name: 'ViolinPlot',
+    //      component: () => import('@/components/ViolinPlot.vue')
+    //    },
+    //    {
+    //      path: '/multi',
+    //      name: 'MultiSource',
+    //      component: () => import('@/components/MultiSource.vue')
+    //    },
     {
       path: '/anatomy',
       name: 'Anatomy',
