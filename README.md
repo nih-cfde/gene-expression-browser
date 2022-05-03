@@ -119,7 +119,8 @@ anatomical site with the 25th highest median TPM value):
 ## Anatomy
 
 In the following screenshot the Anatomy iframe endpoint displays the 25 most highly-expressed genes in
-the adrenal gland (UBERON:0002369). It makes use of the Broad Institute's [GTEx-Viz](https://github.com/broadinstitute/gtex-viz)
+the adrenal gland (UBERON:0002369) and compares the expression in adrenal gland with that in two brain
+regions. It makes use of the Broad Institute's [GTEx-Viz](https://github.com/broadinstitute/gtex-viz)
 Expression Map and the GTEx Portal's [public API](https://gtexportal.org/home/api-docs/index.html):
 
 ![anatomy](../main/doc/images/Anatomy-no-mito.png?raw=true)
@@ -188,6 +189,9 @@ Expression Map and the GTEx Portal's [public API](https://gtexportal.org/home/ap
 
 ## AnatomyMultiSource
 
+A variant of the `/anatomy` iframe that can display expression data from multiple data sources
+(not yet publicly available due to data use restrictions.)
+
 ### Endpoint: `/anatomy_multi`
 
 ### Parameters:
@@ -196,8 +200,6 @@ Expression Map and the GTEx Portal's [public API](https://gtexportal.org/home/ap
  - `width`: Width in pixels of the containing iframe. (required)
  - `height`: Height in pixels of the containing iframe. (required)
  - `numTopGenes`: Number of top-expressed genes to display (default = 10)
-
-
 
 
 ## Build Setup
