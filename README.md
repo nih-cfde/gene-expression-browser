@@ -119,7 +119,7 @@ anatomical site with the 25th highest median TPM value):
 ## Anatomy
 
 In the following screenshot the Anatomy iframe endpoint displays the 25 most highly-expressed genes in
-the adrenal gland (UBERON:0002369), excluding mitochondrial genes. 
+the adrenal gland (UBERON:0002369):
 
 ![anatomy](../main/doc/images/Anatomy-no-mito.png?raw=true)
 
@@ -172,9 +172,18 @@ the adrenal gland (UBERON:0002369), excluding mitochondrial genes.
 
    ![anatomy iframe search for genes by keyword](../main/doc/images/Anatomy-search-genes.png)
 
- - Add specific genes by cutting and pasting gencode ids into the provided textarea:
+ - Add specific genes by cutting and pasting gencode ids into the provided text area:
 
    ![anatomy iframe cut and paste list of gencode ids](../main/doc/images/Anatomy-paste-genes.png)
+
+ - Any user-selected genes that also appear in the top 25 are highlighted:
+
+   ![anatomy iframe highlights top N genes](../main/doc/images/Anatomy-highlight-top-genes.png)
+
+ - Hover over the 2D expression plot to see the median TPM values:
+
+   ![anatomy iframe hover demonstration](../main/doc/images/Anatomy-table-hover.png)
+ 
 
 ## AnatomyMultiSource
 
