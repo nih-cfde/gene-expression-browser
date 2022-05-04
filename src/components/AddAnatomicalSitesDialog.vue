@@ -160,8 +160,6 @@ export default {
     }
   },
   watch: {
-    //    selected (ns) {
-    //    },
     openDialog (od) {
       if (od) {
         let selSites = []
