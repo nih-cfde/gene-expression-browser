@@ -14,7 +14,7 @@
           <span class="font-weight-bold white--text"><img
             src="static/CFDE-icon-1.png"
             style="height: 2rem;"
-            class="pr-2">{{ gtexVerDescr }} expression data for {{ refUberonId }} / {{ gtexTissues != null ? refTissue.tissueSiteDetail : '' }}</span>
+            class="pr-2">{{ gtexVerDescr }} expression data for {{ refUberonId }} / {{ numGtexTissues > 0 ? refTissue.tissueSiteDetail : '' }}</span>
         </div>
       </v-col>
     </v-row>
@@ -156,7 +156,27 @@
         <div id="hmplot_1"/>
 
         <v-container
-          v-if="showSelectedGenes && (tableGenes.length === 0)"
+          v-if="numGtexTissues === 0"
+          fluid
+          fill-width>
+          <v-row>
+            <v-col cols="12">
+              <div
+                column
+                align-center
+                justify-center
+                fill-width
+                class="py-3 text-center">
+                <span class="title text--secondary">
+                  No anatomical site(s) selected.
+                </span>
+              </div>
+            </v-col>
+          </v-row>
+        </v-container>
+
+        <v-container
+          v-else-if="showSelectedGenes && (tableGenes.length === 0)"
           fluid
           fill-width>
           <v-row>
@@ -358,6 +378,16 @@ export default {
         })
       }
       return rt
+    },
+    allGenes () {
+      let allGenes = this.selected_genes.slice()
+      let tg = this.top_expressed_genes != null ? this.top_expressed_genes.slice() : []
+      allGenes = allGenes.concat(tg)
+      return allGenes
+    },
+    numGtexTissues () {
+      if (this.gtexTissues === null) return 0
+      return this.gtexTissues.length
     }
   },
   watch: {
@@ -399,9 +429,9 @@ export default {
       }
     },
     gtexTissues (ts) {
-      if (ts == null) return
+      if ((ts == null) || (ts.length === 0)) return
       // retrieve top-expressed numTopGenes genes
-      let tissueStr = 'tissueSiteDetailId=' + encodeURIComponent(ts[0]['tissueSiteDetailId'])
+      let tissueStr = 'tissueSiteDetailId=' + encodeURIComponent(this.refTissue.tissueSiteDetailId)
       let sortStr = '&sortBy=median&sortDirection=desc'
       // workaround for bug in GTEx API, which filters if 'filterMtGene=false'
       let mitoStr = this.include_mito_genes ? '' : '&filterMtGene=true'
@@ -412,7 +442,7 @@ export default {
     top_expressed_genes (teg) {
       let self = this
       // retrieve median TPM values for *all* requested tissues
-      this.retrieveExpressionData(teg, this.gtexTissues)
+      this.retrieveExpressionData(this.gtexTissues)
 
       // retrieve detailed annotation for selected genes
       let genesUrl = GTEX_API + 'reference/gene?geneId=' + encodeURIComponent(teg.map(x => x.gencodeId).join(',')) + this.gtexURLSuffix(GTEX_VER, PAGE_SIZE, 'json')
@@ -453,9 +483,9 @@ export default {
         this.gtexURLSuffix(GTEX_VER, PAGE_SIZE, 'json')
       return expnUrl
     },
-    retrieveExpressionData (genes, tissues) {
+    retrieveExpressionData (tissues) {
       let self = this
-      let expnUrl = this.medianExpressionURL(genes, tissues)
+      let expnUrl = this.medianExpressionURL(this.allGenes, tissues)
       axios.get(expnUrl, this.axiosConf).then(function (r) { self.addExpressionData(r.data.medianGeneExpression) })
     },
     getGeneDescr (g) {
@@ -463,10 +493,12 @@ export default {
       return g.description.substring(0, g.description.indexOf('['))
     },
     getGeneExpInRef (g) {
-      let key = this.refTissue.tissueSiteDetailId + ':' + g.gencodeId
-      if ((this.tg2expression != null) && (key in this.tg2expression)) {
-        let ev = this.tg2expression[key].median
-        return ev.toFixed(2)
+      if (this.numGtexTissues > 0) {
+        let key = this.refTissue.tissueSiteDetailId + ':' + g.gencodeId
+        if ((this.tg2expression != null) && (key in this.tg2expression)) {
+          let ev = this.tg2expression[key].median
+          return ev.toFixed(2)
+        }
       }
       return '-'
     },
@@ -540,7 +572,7 @@ export default {
     displayExpressionData () {
       if (this.genes == null || this.tissue_info == null || this.tg2expression == null) return
       this.clearExpressionData()
-      if (this.tableGenes.length === 0) return
+      if ((this.tableGenes.length === 0) || (this.numGtexTissues === 0)) return
       let heatmapConfig = {...HEATMAP_CONFIG}
       heatmapConfig.data = []
       heatmapConfig.width = Math.floor(this.width * (7 / 12.0))
@@ -570,7 +602,7 @@ export default {
           }
         })
       })
-
+      if (heatmapConfig.data.length === 0) return
       GTExViz.heatmap(heatmapConfig)
     },
     adjustVpad (vpad) {
@@ -603,7 +635,7 @@ export default {
       this.displayExpressionData()
     },
     addGenesDialogClosed () {
-      this.retrieveExpressionData(this.selected_genes, this.gtexTissues)
+      this.retrieveExpressionData(this.gtexTissues)
     },
     addSitesDialogClosed (nsel) {
       // new list of selected anatomical sites
@@ -614,6 +646,7 @@ export default {
       })
       this.gtexTissuesD = td
       this.gtexTissues = nsel
+      if (nsel.length === 0) this.displayExpressionData()
     }
   }
 }
