@@ -1,3 +1,6 @@
+CFDE-20220430.3
+ -Fix Anatomy iframe bug updating expression plot when displaying user-selected genes (#20)
+
 CFDE-20220430.2
  -Set defaults for numTopGenes, numTopTissues in router
  -Remove hideControls parameter from GeneTissues.vue

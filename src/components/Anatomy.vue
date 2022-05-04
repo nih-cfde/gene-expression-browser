@@ -363,6 +363,12 @@ export default {
       }
       return this.topGenes != null ? this.topGenes : []
     },
+    allGenes () {
+      let allGenes = this.selected_genes.slice()
+      let tg = this.top_expressed_genes != null ? this.top_expressed_genes.slice() : []
+      allGenes = allGenes.concat(tg)
+      return allGenes
+    },
     numGtexTissues () {
       if (this.gtexTissues === null) return 0
       return this.gtexTissues.length
@@ -410,7 +416,7 @@ export default {
     top_expressed_genes (teg) {
       let self = this
       // retrieve median TPM values for *all* requested tissues
-      let expnUrl = this.medianExpressionURL(teg, this.gtexTissues)
+      let expnUrl = this.medianExpressionURL(this.allGenes, this.gtexTissues)
       axios.get(expnUrl).then(function (r) { self.addExpressionData(r.data.medianGeneExpression) })
 
       // retrieve detailed annotation for selected genes
@@ -545,7 +551,6 @@ export default {
       let hspace = heatmapConfig.width - (heatmapConfig.marginRight + heatmapConfig.marginLeft)
       let extraHspace = hspace - (this.gtexTissues.length * MAX_BAND_WIDTH)
       heatmapConfig.marginRight = 120 + ((extraHspace > 0) ? extraHspace : 0)
-
       // loop over genes and tissues
       this.tableGenes.forEach(g => {
         this.gtexTissues.forEach(gt => {
@@ -565,7 +570,6 @@ export default {
           }
         })
       })
-
       if (heatmapConfig.data.length === 0) return
       GTExViz.heatmap(heatmapConfig)
     },
@@ -600,7 +604,7 @@ export default {
     },
     addGenesDialogClosed () {
       let self = this
-      let expnUrl = this.medianExpressionURL(this.selected_genes, this.gtexTissues)
+      let expnUrl = this.medianExpressionURL(this.allGenes, this.gtexTissues)
       axios.get(expnUrl).then(function (r) { self.addExpressionData(r.data.medianGeneExpression) })
     },
     addSitesDialogClosed (nsel) {
